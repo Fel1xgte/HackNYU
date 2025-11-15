@@ -33,8 +33,41 @@ from pathlib import Path
 VIDEO_SEGMENTS_DIR = "video_segments"
 FINAL_OUTPUT_DIR = "final_output"
 
+# Target video duration (seconds)
+TARGET_VIDEO_DURATION = 90
+
 os.makedirs(VIDEO_SEGMENTS_DIR, exist_ok=True)
 os.makedirs(FINAL_OUTPUT_DIR, exist_ok=True)
+
+
+def get_audio_duration(audio_path):
+    """
+    Get the duration of an audio file in seconds.
+    
+    Args:
+        audio_path (str): Path to the audio file
+    
+    Returns:
+        float: Duration in seconds, or 0 if failed
+    """
+    try:
+        result = subprocess.run(
+            [
+                "ffprobe",
+                "-v", "error",
+                "-show_entries", "format=duration",
+                "-of", "default=noprint_wrappers=1:nokey=1",
+                audio_path
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            check=True
+        )
+        return float(result.stdout.strip())
+    except Exception as e:
+        print(f"⚠️  Warning: Could not get duration for {audio_path}: {e}", file=sys.stderr)
+        return 0
 
 
 def check_ffmpeg():
@@ -60,7 +93,7 @@ def check_ffmpeg():
         return False
 
 
-def create_video_segment(slide_image_path, audio_path, segment_index, output_dir=VIDEO_SEGMENTS_DIR):
+def create_video_segment(slide_image_path, audio_path, segment_index, duration=None, output_dir=VIDEO_SEGMENTS_DIR):
     """
     Create a video segment from a slide image and audio file.
     
@@ -68,6 +101,7 @@ def create_video_segment(slide_image_path, audio_path, segment_index, output_dir
         slide_image_path (str): Path to the slide PNG image
         audio_path (str): Path to the audio MP3 file
         segment_index (int): Index of the segment (1-based)
+        duration (float): Optional duration in seconds (overrides audio duration)
         output_dir (str): Directory to save the segment
     
     Returns:
@@ -80,6 +114,8 @@ def create_video_segment(slide_image_path, audio_path, segment_index, output_dir
         print(f"🎬 Creating video segment {segment_index}...")
         print(f"   Slide: {slide_image_path}")
         print(f"   Audio: {audio_path}")
+        if duration:
+            print(f"   Duration: {duration:.2f} seconds")
         
         # FFmpeg command to create video from image and audio
         # -loop 1: Loop the image
@@ -89,7 +125,8 @@ def create_video_segment(slide_image_path, audio_path, segment_index, output_dir
         # -c:a aac: Use AAC audio codec
         # -b:a 192k: Audio bitrate
         # -pix_fmt yuv420p: Pixel format for compatibility
-        # -shortest: Make video duration match audio duration
+        # -t: Set duration if specified
+        # -af atempo: Speed up or slow down audio to fit duration
         # -y: Overwrite output file if exists
         
         command = [
@@ -103,10 +140,28 @@ def create_video_segment(slide_image_path, audio_path, segment_index, output_dir
             "-c:a", "aac",  # Audio codec
             "-b:a", "192k",  # Audio bitrate
             "-pix_fmt", "yuv420p",  # Pixel format
-            "-shortest",  # Duration matches shortest input (audio)
+        ]
+        
+        # Add duration and audio speed adjustment if specified
+        if duration:
+            audio_dur = get_audio_duration(audio_path)
+            if audio_dur > 0:
+                speed = audio_dur / duration
+                # atempo only accepts 0.5-2.0, so chain multiple if needed
+                if 0.5 <= speed <= 2.0:
+                    command.extend(["-af", f"atempo={speed}"])
+                elif speed < 0.5:
+                    command.extend(["-af", "atempo=0.5,atempo=" + str(speed/0.5)])
+                else:  # speed > 2.0
+                    command.extend(["-af", "atempo=2.0,atempo=" + str(speed/2.0)])
+            command.extend(["-t", str(duration)])
+        else:
+            command.append("-shortest")  # Duration matches shortest input (audio)
+        
+        command.extend([
             "-movflags", "+faststart",  # Enable fast start for web playback
             output_path
-        ]
+        ])
         
         result = subprocess.run(
             command,
@@ -165,7 +220,9 @@ def concatenate_video_segments(segment_paths, output_filename="final_video.mp4")
         # -f concat: Use concat demuxer
         # -safe 0: Allow absolute paths
         # -i: Input concat list file
-        # -c copy: Copy streams without re-encoding (fast)
+        # -c:v copy: Copy video stream (fast)
+        # -c:a aac: Re-encode audio to ensure compatibility
+        # -b:a 192k: Audio bitrate
         
         command = [
             "ffmpeg",
@@ -173,7 +230,10 @@ def concatenate_video_segments(segment_paths, output_filename="final_video.mp4")
             "-f", "concat",  # Concat demuxer
             "-safe", "0",  # Allow absolute paths
             "-i", concat_list_path,  # Input concat list
-            "-c", "copy",  # Copy streams (no re-encoding)
+            "-c:v", "copy",  # Copy video stream (no re-encoding)
+            "-c:a", "aac",  # Re-encode audio for compatibility
+            "-b:a", "192k",  # Audio bitrate
+            "-movflags", "+faststart",  # Enable fast start
             output_path
         ]
         
@@ -226,16 +286,38 @@ def stitch_slides_to_video(slide_image_paths, audio_paths, output_filename="fina
         print(f"\n🎬 Starting video stitching pipeline...")
         print(f"   Slides: {len(slide_image_paths)}")
         print(f"   Audio files: {len(audio_paths)}")
+        print(f"   Target duration: {TARGET_VIDEO_DURATION} seconds")
         print()
         
         # Check FFmpeg
         if not check_ffmpeg():
             return None
         
+        # Calculate total audio duration and segment durations
+        audio_durations = []
+        for audio_path in audio_paths:
+            if os.path.exists(audio_path):
+                duration = get_audio_duration(audio_path)
+                audio_durations.append(duration)
+            else:
+                audio_durations.append(0)
+        
+        total_audio_duration = sum(audio_durations)
+        
+        # Calculate proportional durations to fit TARGET_VIDEO_DURATION
+        if total_audio_duration > 0:
+            segment_durations = [(d / total_audio_duration) * TARGET_VIDEO_DURATION for d in audio_durations]
+            print(f"📊 Original audio duration: {total_audio_duration:.2f}s → Compressed to: {TARGET_VIDEO_DURATION}s")
+            print(f"   Compression ratio: {TARGET_VIDEO_DURATION/total_audio_duration:.2f}x\n")
+        else:
+            # Fallback: equal distribution
+            segment_durations = [TARGET_VIDEO_DURATION / len(audio_paths)] * len(audio_paths)
+            print(f"⚠️  Could not detect audio durations, using equal distribution\n")
+        
         # Create video segments
         segment_paths = []
         
-        for i, (slide_path, audio_path) in enumerate(zip(slide_image_paths, audio_paths), start=1):
+        for i, (slide_path, audio_path, duration) in enumerate(zip(slide_image_paths, audio_paths, segment_durations), start=1):
             # Verify files exist
             if not os.path.exists(slide_path):
                 print(f"⚠️  Warning: Slide image not found: {slide_path}", file=sys.stderr)
@@ -245,7 +327,7 @@ def stitch_slides_to_video(slide_image_paths, audio_paths, output_filename="fina
                 print(f"⚠️  Warning: Audio file not found: {audio_path}", file=sys.stderr)
                 continue
             
-            segment_path = create_video_segment(slide_path, audio_path, i)
+            segment_path = create_video_segment(slide_path, audio_path, i, duration=duration)
             
             if segment_path:
                 segment_paths.append(segment_path)

@@ -1,0 +1,11 @@
+# Core dependencies
+elevenlabs==1.8.0
+
+# Image processing (updated for Python 3.13 compatibility)
+Pillow>=11.0.0
+
+# Google AI
+google-generativeai
+
+# Environment variables
+python-dotenv
