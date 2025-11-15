@@ -1,0 +1,63 @@
+{
+  "slides": [
+    {
+      "title": "IC Design Process: An Overview",
+      "points": [
+        "Beginner's guide to VLSI technology.",
+        "Connects HDL code to silicon circuits.",
+        "Focuses on theoretical IC design flow.",
+        "Not a coding-specific course."
+      ]
+    },
+    {
+      "title": "What is an Integrated Circuit (IC)?",
+      "points": [
+        "Electronic circuits on a tiny semiconductor plate.",
+        "Contains billions of transistors.",
+        "Can be Analog or Digital.",
+        "SoC: Entire system on a single chip."
+      ],
+      "visual_hint": "Magnified view of a silicon chip or a simple IC diagram"
+    },
+    {
+      "title": "Evolution of ICs: From SSI to VLSI",
+      "points": [
+        "Early ICs (SSI) had few components.",
+        "Transistor count grew exponentially (MSI, LSI).",
+        "VLSI: Millions to billions of transistors.",
+        "Now, VLSI refers to all modern ICs."
+      ],
+      "visual_hint": "Timeline showing SSI, MSI, LSI, VLSI with increasing transistor counts"
+    },
+    {
+      "title": "Digital Circuit Fundamentals",
+      "points": [
+        "All data is converted to binary (0s & 1s).",
+        "Circuits use switches (transistors) for voltage control.",
+        "Combinational: Output depends on current input.",
+        "Sequential: Output depends on input + past state (memory)."
+      ],
+      "visual_hint": "Simple diagrams of a switch, or a logic gate"
+    },
+    {
+      "title": "Why Use Hardware Description Languages (HDLs)?",
+      "points": [
+        "IC complexity grew beyond manual drawing.",
+        "HDLs describe circuit behavior at high level.",
+        "Abstract details from transistor level.",
+        "EDA tools convert HDL to fabrication mask."
+      ],
+      "visual_hint": "Flowchart: HDL code -> EDA Tools -> Fabrication Mask"
+    },
+    {
+      "title": "Verilog & SystemVerilog HDLs",
+      "points": [
+        "Verilog: Developed 1984, IEEE standard 1995.",
+        "SystemVerilog: Extension of Verilog (2005).",
+        "Supports both design and verification.",
+        "Advanced features like Object-Oriented Programming."
+      ],
+      "visual_hint": "Logos of Verilog and SystemVerilog"
+    }
+  ]
+}
