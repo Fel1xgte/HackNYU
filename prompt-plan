@@ -1,0 +1,25 @@
+Okay so idea, is to shrink a lecture video down from 1 hour, to 10 minutes of video content, by analyzing what is important, generating slides that include that important information and having a voice that speaks to us. Or alternatively able to "screenshot" the "important slides" and use it in our video
+
+We will take a video input from the user . We want to take the user input video and first transcribe the video into json/text format using some apis/libraries. The transcribed json file will be used for the further purpose of the application like to generate slides and generate videos. 
+
+This it the optional feature: We can implement this later depending on time. Or provide me with suggestions for what and when to do: The generated video would be of custom length and tone as suggest by the user. For instance user can say “Generate a 3 minute summary video” , “Generate an engaging, layman level explanation”, “Provide me with deep technical level jargons specific explanation so that i can impress my prof/freinds”. After that we will generate a video and slides. 
+
+We will convert transcripts into shorter videos as per the user’s requirements! By default we will provide with 5 minutes summary of the uploaded video. The summary should be engaging, easy to understand, concise, explanatory, etc. (provid a good big prompt here). So you will write out texts first
+
+Then you will create slides based on the generated text. Per slide we will speak for around one minute in our vide. So write text accordingly.
+
+The generated text will be used to generate slides and will act as transcripts for the video generated summary by us of 5 minutes. 
+
+then after playing the video, we will let users ask questions or queries based on their understanding. We will convert user audio into text using elevenlabs api, then from that text we will provide answerrs to user’s question and again in turn the generated text into audio using eleven labs api. Then we will speak it out to the user
+
+Suggest me improvements, for my project. Please keep in mind that i am in nyu hackathon and we are group of 3-4 people building this project in under 24 hours! List pros/cons of the idea. How can we improve the cons and make it into a fantastic hackathon wining project. alsso suggest use the tech stack we can use to build the application. I prefer using Elevenlabs API, Open AI API, etc. Critically analyse the idea and act as our mentor, what/how we will build this project and which technologies to use!
+
+---
+
+Challegne tracks info:-Elevenlabs:- 
+
+ElevenLabs Prize Category - Best Use of ElevenLabs
+
+Prize: Wireless Earbuds
+
+Deploy natural, human-sounding audio with ElevenLabs. Create realistic, dynamic and emotionally expressive voices for any project—from interactive AI companions to narrated stories and voice-enabled apps. ElevenLabs empowers you to build rich, immersive experiences without actors or complex audio production, using simply the power of AI. Integrate fully-autonomous audio experiences into your hack with ElevenLabs and give your team the chance to win wireless earbuds!
