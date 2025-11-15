@@ -1,0 +1,343 @@
+"""
+Video Stitcher for Confucius Lecture Summarizer
+
+This module stitches PNG slide images and MP3 audio files into MP4 videos using FFmpeg.
+It creates individual video segments and concatenates them into a final video.
+
+Key Features:
+    - FFmpeg-based video generation
+    - Static slides with synchronized audio
+    - Fast rendering (~5-10 seconds total)
+    - H.264 encoding for universal compatibility
+    - Web-optimized output with faststart flag
+
+Functions:
+    check_ffmpeg: Verify FFmpeg installation
+    create_video_segment: Create a single video segment from image + audio
+    concatenate_video_segments: Merge all segments into final video
+    stitch_slides_to_video: Complete pipeline for video generation
+    get_file_paths_from_directories: Helper to auto-discover files
+
+Usage:
+    from video_stitcher import stitch_slides_to_video
+    video_path = stitch_slides_to_video(slide_paths, audio_paths, "output.mp4")
+"""
+
+import os
+import sys
+import subprocess
+import json
+from pathlib import Path
+
+# Directories
+VIDEO_SEGMENTS_DIR = "video_segments"
+FINAL_OUTPUT_DIR = "final_output"
+
+os.makedirs(VIDEO_SEGMENTS_DIR, exist_ok=True)
+os.makedirs(FINAL_OUTPUT_DIR, exist_ok=True)
+
+
+def check_ffmpeg():
+    """
+    Check if FFmpeg is installed and available.
+    """
+    try:
+        result = subprocess.run(
+            ["ffmpeg", "-version"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            check=True
+        )
+        print("✅ FFmpeg is installed and ready")
+        return True
+    except FileNotFoundError:
+        print("❌ ERROR: FFmpeg is not installed!", file=sys.stderr)
+        print("   Install with: brew install ffmpeg (macOS)", file=sys.stderr)
+        return False
+    except subprocess.CalledProcessError:
+        print("❌ ERROR: FFmpeg check failed", file=sys.stderr)
+        return False
+
+
+def create_video_segment(slide_image_path, audio_path, segment_index, output_dir=VIDEO_SEGMENTS_DIR):
+    """
+    Create a video segment from a slide image and audio file.
+    
+    Args:
+        slide_image_path (str): Path to the slide PNG image
+        audio_path (str): Path to the audio MP3 file
+        segment_index (int): Index of the segment (1-based)
+        output_dir (str): Directory to save the segment
+    
+    Returns:
+        str: Path to the generated video segment, or None if failed
+    """
+    try:
+        output_filename = f"segment_{segment_index:02d}.mp4"
+        output_path = os.path.join(output_dir, output_filename)
+        
+        print(f"🎬 Creating video segment {segment_index}...")
+        print(f"   Slide: {slide_image_path}")
+        print(f"   Audio: {audio_path}")
+        
+        # FFmpeg command to create video from image and audio
+        # -loop 1: Loop the image
+        # -i: Input files
+        # -c:v libx264: Use H.264 video codec
+        # -tune stillimage: Optimize for static images
+        # -c:a aac: Use AAC audio codec
+        # -b:a 192k: Audio bitrate
+        # -pix_fmt yuv420p: Pixel format for compatibility
+        # -shortest: Make video duration match audio duration
+        # -y: Overwrite output file if exists
+        
+        command = [
+            "ffmpeg",
+            "-y",  # Overwrite output
+            "-loop", "1",  # Loop the image
+            "-i", slide_image_path,  # Input image
+            "-i", audio_path,  # Input audio
+            "-c:v", "libx264",  # Video codec
+            "-tune", "stillimage",  # Optimize for still images
+            "-c:a", "aac",  # Audio codec
+            "-b:a", "192k",  # Audio bitrate
+            "-pix_fmt", "yuv420p",  # Pixel format
+            "-shortest",  # Duration matches shortest input (audio)
+            "-movflags", "+faststart",  # Enable fast start for web playback
+            output_path
+        ]
+        
+        result = subprocess.run(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            check=True
+        )
+        
+        print(f"   ✅ Segment created: {output_path}")
+        return output_path
+    
+    except subprocess.CalledProcessError as e:
+        print(f"   ❌ FFmpeg error for segment {segment_index}:", file=sys.stderr)
+        print(f"   {e.stderr}", file=sys.stderr)
+        return None
+    except Exception as e:
+        print(f"   ❌ Error creating segment {segment_index}: {e}", file=sys.stderr)
+        return None
+
+
+def concatenate_video_segments(segment_paths, output_filename="final_video.mp4"):
+    """
+    Concatenate all video segments into a single final video.
+    
+    Args:
+        segment_paths (list): List of paths to video segments
+        output_filename (str): Name of the final output video file
+    
+    Returns:
+        str: Path to the final video, or None if failed
+    """
+    try:
+        if not segment_paths:
+            print("❌ No video segments to concatenate", file=sys.stderr)
+            return None
+        
+        print(f"\n🎞️  Concatenating {len(segment_paths)} video segments...")
+        
+        # Create concat list file for FFmpeg
+        concat_list_path = os.path.join(VIDEO_SEGMENTS_DIR, "concat_list.txt")
+        
+        with open(concat_list_path, "w", encoding="utf-8") as f:
+            for segment_path in segment_paths:
+                # Use absolute paths for FFmpeg concat
+                abs_path = os.path.abspath(segment_path)
+                # Escape single quotes in paths for FFmpeg
+                abs_path = abs_path.replace("'", "'\\''")
+                f.write(f"file '{abs_path}'\n")
+        
+        print(f"   Created concat list: {concat_list_path}")
+        
+        output_path = os.path.join(FINAL_OUTPUT_DIR, output_filename)
+        
+        # FFmpeg concat command
+        # -f concat: Use concat demuxer
+        # -safe 0: Allow absolute paths
+        # -i: Input concat list file
+        # -c copy: Copy streams without re-encoding (fast)
+        
+        command = [
+            "ffmpeg",
+            "-y",  # Overwrite output
+            "-f", "concat",  # Concat demuxer
+            "-safe", "0",  # Allow absolute paths
+            "-i", concat_list_path,  # Input concat list
+            "-c", "copy",  # Copy streams (no re-encoding)
+            output_path
+        ]
+        
+        result = subprocess.run(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            check=True
+        )
+        
+        print(f"   ✅ Final video created: {output_path}")
+        
+        # Get video info
+        file_size = os.path.getsize(output_path) / (1024 * 1024)  # MB
+        print(f"   📊 File size: {file_size:.2f} MB")
+        
+        return output_path
+    
+    except subprocess.CalledProcessError as e:
+        print(f"❌ FFmpeg concatenation error:", file=sys.stderr)
+        print(f"   {e.stderr}", file=sys.stderr)
+        return None
+    except Exception as e:
+        print(f"❌ Error concatenating videos: {e}", file=sys.stderr)
+        return None
+
+
+def stitch_slides_to_video(slide_image_paths, audio_paths, output_filename="final_video.mp4"):
+    """
+    Complete pipeline: Create video segments and concatenate them.
+    
+    Args:
+        slide_image_paths (list): List of paths to slide PNG images
+        audio_paths (list): List of paths to audio MP3 files
+        output_filename (str): Name of the final output video
+    
+    Returns:
+        str: Path to the final video, or None if failed
+    """
+    try:
+        if len(slide_image_paths) != len(audio_paths):
+            print(f"❌ Mismatch: {len(slide_image_paths)} slides but {len(audio_paths)} audio files", file=sys.stderr)
+            return None
+        
+        if not slide_image_paths:
+            print("❌ No slides to process", file=sys.stderr)
+            return None
+        
+        print(f"\n🎬 Starting video stitching pipeline...")
+        print(f"   Slides: {len(slide_image_paths)}")
+        print(f"   Audio files: {len(audio_paths)}")
+        print()
+        
+        # Check FFmpeg
+        if not check_ffmpeg():
+            return None
+        
+        # Create video segments
+        segment_paths = []
+        
+        for i, (slide_path, audio_path) in enumerate(zip(slide_image_paths, audio_paths), start=1):
+            # Verify files exist
+            if not os.path.exists(slide_path):
+                print(f"⚠️  Warning: Slide image not found: {slide_path}", file=sys.stderr)
+                continue
+            
+            if not os.path.exists(audio_path):
+                print(f"⚠️  Warning: Audio file not found: {audio_path}", file=sys.stderr)
+                continue
+            
+            segment_path = create_video_segment(slide_path, audio_path, i)
+            
+            if segment_path:
+                segment_paths.append(segment_path)
+            else:
+                print(f"⚠️  Warning: Failed to create segment {i}, skipping...", file=sys.stderr)
+        
+        if not segment_paths:
+            print("❌ No video segments were created successfully", file=sys.stderr)
+            return None
+        
+        # Concatenate segments
+        final_video_path = concatenate_video_segments(segment_paths, output_filename)
+        
+        if final_video_path:
+            print(f"\n✨ SUCCESS! Final video ready: {final_video_path}")
+            return final_video_path
+        else:
+            print("\n❌ Failed to create final video", file=sys.stderr)
+            return None
+    
+    except Exception as e:
+        print(f"❌ Unexpected error in video stitching: {e}", file=sys.stderr)
+        return None
+
+
+def get_file_paths_from_directories():
+    """
+    Helper function to automatically find slide and audio files from directories.
+    
+    Returns:
+        tuple: (slide_paths, audio_paths) - Lists of sorted file paths
+    
+    Raises:
+        FileNotFoundError: If directories don't exist
+    """
+    slide_dir = "rendered_slides"
+    audio_dir = "generated_audio"
+    
+    # Check if directories exist
+    if not os.path.exists(slide_dir):
+        print(f"⚠️  Warning: Directory '{slide_dir}' not found", file=sys.stderr)
+        return [], []
+    
+    if not os.path.exists(audio_dir):
+        print(f"⚠️  Warning: Directory '{audio_dir}' not found", file=sys.stderr)
+        return [], []
+    
+    try:
+        # Get sorted slide paths
+        slide_paths = sorted([
+            os.path.join(slide_dir, f) 
+            for f in os.listdir(slide_dir) 
+            if f.endswith('.png') and not f.startswith('.')
+        ])
+        
+        # Get sorted audio paths
+        audio_paths = sorted([
+            os.path.join(audio_dir, f) 
+            for f in os.listdir(audio_dir) 
+            if f.endswith('.mp3') and not f.startswith('.')
+        ])
+        
+        return slide_paths, audio_paths
+    
+    except Exception as e:
+        print(f"❌ Error reading directories: {e}", file=sys.stderr)
+        return [], []
+
+
+if __name__ == "__main__":
+    # When run directly, automatically find and process files
+    try:
+        slide_paths, audio_paths = get_file_paths_from_directories()
+        
+        if not slide_paths:
+            print("❌ No slide images found in 'rendered_slides' directory", file=sys.stderr)
+            sys.exit(1)
+        
+        if not audio_paths:
+            print("❌ No audio files found in 'generated_audio' directory", file=sys.stderr)
+            sys.exit(1)
+        
+        final_video = stitch_slides_to_video(slide_paths, audio_paths)
+        
+        if final_video:
+            print(f"\n🎉 Video generation complete!")
+            print(f"📁 Location: {os.path.abspath(final_video)}")
+            sys.exit(0)
+        else:
+            print("\n❌ Video generation failed!")
+            sys.exit(1)
+    
+    except Exception as e:
+        print(f"❌ Fatal error: {e}", file=sys.stderr)
+        sys.exit(1)
