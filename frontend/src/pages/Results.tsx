@@ -1,10 +1,21 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Download, ArrowLeft, Sparkles, Mic } from "lucide-react";
-import confuciusAvatar from "@/assets/confucius-avatar.jpg";
+import { Download, ArrowLeft, Sparkles } from "lucide-react";
 import confuciusLogo from "@/assets/confucius-logo.png";
 import heroBackground from "@/assets/hero-background-2.png";
+import { useVoiceRecording } from "@/hooks/useVoiceRecording";
+import { ConficiusWidget } from "@/components/ConficiusWidget";
+import { ChatBubbles } from "@/components/ChatBubbles";
+
+type WidgetState = "idle" | "listening" | "processing" | "answering";
+
+interface ChatMessage {
+  id: string;
+  text: string;
+  isUser: boolean;
+  timestamp: number;
+}
 
 const Results = () => {
   const location = useLocation();
@@ -12,6 +23,26 @@ const Results = () => {
   const [processingStep, setProcessingStep] = useState("Starting...");
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Voice Q&A state
+  const [widgetState, setWidgetState] = useState<WidgetState>("idle");
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [recordingDuration, setRecordingDuration] = useState(0);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const recordingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const isProcessingRef = useRef<boolean>(false); // Prevent race conditions
+
+  const {
+    startRecording,
+    stopRecording,
+    isRecording,
+    audioBlob,
+    error: recordingError,
+  } = useVoiceRecording();
+
+  // API timeout configuration
+  const API_TIMEOUT_MS = 30000; // 30 seconds
 
   // Helper function to parse detailed status messages
   const getStatusMessage = (statusString: string): string => {
@@ -131,6 +162,317 @@ const Results = () => {
     }
   };
 
+  // ----------------------------
+  // Voice Q&A handlers
+  // ----------------------------
+  /**
+   * Handle microphone button click with state machine logic
+   * - Idle: Start recording and pause video
+   * - Listening: Stop recording and process question
+   * - Answering: Barge-in (interrupt TTS)
+   */
+  const handleMicClick = async () => {
+    // Prevent race conditions
+    if (isProcessingRef.current) {
+      console.warn("Already processing a request");
+      return;
+    }
+
+    try {
+      if (widgetState === "idle") {
+        // Start recording
+        const video = videoRef.current;
+        if (video && !video.paused) {
+          video.pause();
+        }
+
+        await startRecording();
+        setWidgetState("listening");
+        setRecordingDuration(0);
+
+        // Start duration timer
+        if (recordingIntervalRef.current) {
+          clearInterval(recordingIntervalRef.current);
+        }
+        recordingIntervalRef.current = setInterval(() => {
+          setRecordingDuration(prev => prev + 1);
+        }, 1000);
+      } else if (widgetState === "listening") {
+        // Stop recording and process
+        if (recordingIntervalRef.current) {
+          clearInterval(recordingIntervalRef.current);
+          recordingIntervalRef.current = null;
+        }
+        const blob = await stopRecording();
+        if (blob && blob.size > 0) {
+          await processQuestion(blob);
+        } else {
+          setWidgetState("idle");
+          const errorMsg: ChatMessage = {
+            id: `error-${Date.now()}`,
+            text: "No audio was recorded. Please try again.",
+            isUser: false,
+            timestamp: Date.now(),
+          };
+          setChatMessages(prev => [...prev, errorMsg]);
+        }
+      } else if (widgetState === "answering") {
+        // Barge-in: stop TTS and return to idle
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current.currentTime = 0;
+          audioRef.current = null;
+        }
+        setWidgetState("idle");
+      }
+    } catch (err) {
+      console.error("Mic click error:", err);
+      setWidgetState("idle");
+      if (recordingIntervalRef.current) {
+        clearInterval(recordingIntervalRef.current);
+        recordingIntervalRef.current = null;
+      }
+    }
+  };
+
+  /**
+   * Fetch with timeout wrapper
+   */
+  const fetchWithTimeout = async (
+    url: string,
+    options: RequestInit,
+    timeoutMs: number = API_TIMEOUT_MS
+  ): Promise<Response> => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+      const response = await fetch(url, {
+        ...options,
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+      return response;
+    } catch (err) {
+      clearTimeout(timeoutId);
+      if (err instanceof Error && err.name === "AbortError") {
+        throw new Error("Request timeout. Please try again.");
+      }
+      throw err;
+    }
+  };
+
+  /**
+   * Process recorded audio through STT → QA → TTS pipeline
+   *
+   * @param audioBlob - Recorded audio blob
+   */
+  const processQuestion = async (audioBlob: Blob) => {
+    // Prevent concurrent processing
+    if (isProcessingRef.current) {
+      return;
+    }
+
+    isProcessingRef.current = true;
+    setWidgetState("processing");
+
+    try {
+      // Validate audio blob
+      if (!audioBlob || audioBlob.size === 0) {
+        throw new Error("Invalid audio recording");
+      }
+
+      // 1. STT: Convert audio to text
+      const formData = new FormData();
+      formData.append("audio", audioBlob, "recording.webm");
+
+      const sttResponse = await fetchWithTimeout(
+        "http://127.0.0.1:8000/api/stt",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      if (!sttResponse.ok) {
+        const errorData = await sttResponse.json().catch(() => ({}));
+        throw new Error(
+          errorData.detail || `STT failed with status ${sttResponse.status}`
+        );
+      }
+
+      const sttData = await sttResponse.json();
+      const question = sttData.transcript?.trim();
+
+      if (!question || question === "") {
+        throw new Error("No speech detected in recording");
+      }
+
+      // Add user message to chat
+      const userMessage: ChatMessage = {
+        id: `user-${Date.now()}`,
+        text: question,
+        isUser: true,
+        timestamp: Date.now(),
+      };
+      setChatMessages(prev => [...prev, userMessage]);
+
+      // 2. QA: Get answer
+      const currentTime = Math.max(0, videoRef.current?.currentTime || 0);
+      const qaResponse = await fetchWithTimeout(
+        "http://127.0.0.1:8000/api/qa",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            question,
+            currentTime,
+          }),
+        }
+      );
+
+      if (!qaResponse.ok) {
+        const errorData = await qaResponse.json().catch(() => ({}));
+        throw new Error(
+          errorData.detail || `QA failed with status ${qaResponse.status}`
+        );
+      }
+
+      const qaData = await qaResponse.json();
+      const { answerText, action, targetTime } = qaData;
+
+      if (!answerText || answerText.trim() === "") {
+        throw new Error("No answer received from server");
+      }
+
+      // Add Conficius message to chat
+      const conficiusMessage: ChatMessage = {
+        id: `conficius-${Date.now()}`,
+        text: answerText,
+        isUser: false,
+        timestamp: Date.now(),
+      };
+      setChatMessages(prev => [...prev, conficiusMessage]);
+
+      // 3. Handle video action
+      if (videoRef.current) {
+        const video = videoRef.current;
+        if (action === "jump" && targetTime !== undefined) {
+          const seekTime = Math.max(
+            0,
+            Math.min(targetTime - 0.5, video.duration || 0)
+          );
+          video.currentTime = seekTime;
+        } else if (action === "rewatch" && targetTime !== undefined) {
+          const seekTime = Math.max(
+            0,
+            Math.min(targetTime, video.duration || 0)
+          );
+          video.currentTime = seekTime;
+        }
+      }
+
+      // 4. TTS: Generate and play audio
+      setWidgetState("answering");
+      const ttsResponse = await fetchWithTimeout(
+        "http://127.0.0.1:8000/api/tts",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: answerText }),
+        }
+      );
+
+      if (ttsResponse.ok) {
+        const ttsData = await ttsResponse.json();
+        const audioUrl = `http://127.0.0.1:8000${ttsData.audioUrl}`;
+
+        // Play audio with error handling
+        const audio = new Audio(audioUrl);
+        audioRef.current = audio;
+
+        // Set up event handlers before playing
+        audio.onended = () => {
+          setWidgetState("idle");
+          audioRef.current = null;
+          isProcessingRef.current = false;
+          // Resume video if paused
+          if (videoRef.current && videoRef.current.paused) {
+            videoRef.current.play().catch(err => {
+              console.warn("Failed to resume video:", err);
+            });
+          }
+        };
+
+        audio.onerror = err => {
+          console.error("Audio playback error:", err);
+          setWidgetState("idle");
+          audioRef.current = null;
+          isProcessingRef.current = false;
+        };
+
+        try {
+          await audio.play();
+        } catch (playError) {
+          console.error("Failed to play audio:", playError);
+          setWidgetState("idle");
+          audioRef.current = null;
+          isProcessingRef.current = false;
+        }
+      } else {
+        // TTS failed, just show text
+        setWidgetState("idle");
+        isProcessingRef.current = false;
+      }
+    } catch (err) {
+      console.error("Q&A error:", err);
+      setWidgetState("idle");
+      isProcessingRef.current = false;
+
+      const errorMessage =
+        err instanceof Error ? err.message : "Unknown error occurred";
+      const errorChatMessage: ChatMessage = {
+        id: `error-${Date.now()}`,
+        text: `Sorry, I encountered an error: ${errorMessage}. Please try again.`,
+        isUser: false,
+        timestamp: Date.now(),
+      };
+      setChatMessages(prev => [...prev, errorChatMessage]);
+    }
+  };
+
+  const handleDismissMessage = (id: string) => {
+    setChatMessages(prev => prev.filter(msg => msg.id !== id));
+  };
+
+  // Handle recording errors
+  useEffect(() => {
+    if (recordingError) {
+      setWidgetState("idle");
+      const errorMsg: ChatMessage = {
+        id: `error-${Date.now()}`,
+        text: `Recording error: ${recordingError}`,
+        isUser: false,
+        timestamp: Date.now(),
+      };
+      setChatMessages(prev => [...prev, errorMsg]);
+    }
+  }, [recordingError]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (recordingIntervalRef.current) {
+        clearInterval(recordingIntervalRef.current);
+      }
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+      isProcessingRef.current = false;
+    };
+  }, []);
+
   return (
     <div className="min-h-screen relative overflow-hidden">
       {/* Background */}
@@ -199,7 +541,12 @@ const Results = () => {
                     </Link>
                   </div>
                 ) : videoUrl ? (
-                  <video controls className="w-full h-full" src={videoUrl}>
+                  <video
+                    ref={videoRef}
+                    controls
+                    className="w-full h-full"
+                    src={videoUrl}
+                  >
                     Your browser does not support the video tag.
                   </video>
                 ) : (
@@ -232,8 +579,7 @@ const Results = () => {
 
             {/* Center text */}
             <p className="whitespace-nowrap text-sm md:text-base text-primary-foreground/80">
-              <span className="italic">Confused?</span>{" "}
-              Ask{" "}
+              <span className="italic">Confused?</span> Ask{" "}
               <span className="font-semibold">Confucius</span>
             </p>
           </div>
@@ -251,31 +597,22 @@ const Results = () => {
           </Link>
         </div>
 
-        {/* Confucius Avatar + Mic button */}
-        <div className="fixed bottom-12 right-24 flex flex-col items-center gap-2 animate-fade-in animation-delay-500 group">
-          <span className="text-accent font-semibold text-lg group-hover:scale-110 transition-transform">
-            Confucius
-          </span>
-          <div className="relative">
-            <img
-              src={confuciusAvatar}
-              alt="Confucius Avatar"
-              className="w-64 h-auto rounded-2xl shadow-card group-hover:shadow-xl transition-all duration-300 group-hover:scale-105 relative z-10"
-            />
-            <div className="absolute inset-0 bg-accent/20 rounded-2xl blur-xl group-hover:bg-accent/40 transition-all duration-500" />
-          </div>
-          <div className="text-xs text-accent/60 italic">孔子</div>
+        {/* Chat Bubbles */}
+        {!isProcessing && chatMessages.length > 0 && (
+          <ChatBubbles
+            messages={chatMessages}
+            onDismiss={handleDismissMessage}
+          />
+        )}
 
-          {/* Mic button centered under card */}
-          <Button
-            className="mt-4 w-20 h-20 rounded-full bg-accent text-primary-foreground shadow-card hover:shadow-xl hover:scale-110 transition-all duration-300 flex items-center justify-center"
-          >
-            <Mic
-              className="text-primary-foreground"
-              style={{ width: 30, height: 30 }}
-            />
-          </Button>
-        </div>
+        {/* Conficius Widget */}
+        {!isProcessing && (
+          <ConficiusWidget
+            state={widgetState}
+            recordingDuration={recordingDuration}
+            onMicClick={handleMicClick}
+          />
+        )}
 
         {/* Chinese Decorations */}
         <div className="absolute top-1/2 left-8 -translate-y-1/2 text-8xl font-bold text-accent/5 pointer-events-none select-none rotate-90 hidden lg:block">
