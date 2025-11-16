@@ -100,8 +100,8 @@ class Config:
     # Google Gemini Configuration
     # ============================================
     # Available models: gemini-pro, gemini-1.5-pro, gemini-1.5-flash, gemini-2.0-flash-exp
-    # Using flash for faster responses, pro for better quality
-    GEMINI_MODEL = "gemini-1.5-flash"  # Fast and capable model
+    # Using 2.0-flash-exp for best balance of speed, quality, and improved reasoning
+    GEMINI_MODEL = "gemini-2.0-flash-exp"  # Latest experimental model with enhanced capabilities
     
     # ============================================
     # Slide Rendering Settings

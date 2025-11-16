@@ -172,10 +172,13 @@ def calculate_relevance_score(question: str, segment_text: str, time_distance: f
     segment_lower = segment_text.lower()
     
     # Extract meaningful keywords (words > 3 chars, excluding common stop words)
+    # Enhanced stop words list for better keyword extraction
     stop_words = {
         "the", "what", "is", "are", "was", "were", "this", "that", 
         "these", "those", "can", "could", "would", "should", "about",
-        "with", "from", "have", "has", "had", "will", "would"
+        "with", "from", "have", "has", "had", "will", "would",
+        "how", "why", "when", "where", "who", "which", "does", "did",
+        "for", "you", "your", "they", "them", "their", "been", "being"
     }
     keywords = [w for w in question_lower.split() if len(w) > 3 and w not in stop_words]
     
@@ -183,26 +186,36 @@ def calculate_relevance_score(question: str, segment_text: str, time_distance: f
     if not keywords:
         keywords = [w for w in question_lower.split() if len(w) > 2 and w not in stop_words]
     
-    # Count keyword matches (case-insensitive)
-    keyword_matches = sum(1 for keyword in keywords if keyword in segment_lower)
+    # Count keyword matches (case-insensitive) with partial matching
+    keyword_matches = 0
+    for keyword in keywords:
+        if keyword in segment_lower:
+            keyword_matches += 1
+        # Partial match bonus for longer keywords
+        elif len(keyword) > 5:
+            for word in segment_lower.split():
+                if keyword in word or word in keyword:
+                    keyword_matches += 0.5
+                    break
+    
     keyword_score = keyword_matches / max(len(keywords), 1) if keywords else 0.0
     
-    # Time proximity score (closer = better, exponential decay)
-    # Score decays over 30 seconds
-    time_score = 1.0 / (1.0 + time_distance / 30.0)
+    # Time proximity score (closer = better, slower decay for broader search)
+    # Score decays over 45 seconds instead of 30 for more context
+    time_score = 1.0 / (1.0 + time_distance / 45.0)
     
-    # Exact phrase match bonus (2+ word phrases)
+    # Exact phrase match bonus (2+ word phrases) with higher weight
     phrase_bonus = 0.0
     question_words = question_lower.split()
     if len(question_words) >= 2:
         for i in range(len(question_words) - 1):
             phrase = f"{question_words[i]} {question_words[i+1]}"
             if phrase in segment_lower:
-                phrase_bonus += 0.3
+                phrase_bonus += 0.4
                 break  # Only count first match
     
-    # Combined weighted score
-    relevance = min(1.0, (keyword_score * 0.6 + time_score * 0.3 + min(phrase_bonus, 0.3) * 0.1))
+    # Combined weighted score: prioritize content (70%) over time (20%) and phrases (10%)
+    relevance = min(1.0, (keyword_score * 0.7 + time_score * 0.2 + min(phrase_bonus, 0.4) * 0.1))
     
     return relevance
 
@@ -211,12 +224,14 @@ def find_relevant_segments(
     question: str,
     transcript: Dict,
     current_time: float,
-    window_sec: float = 60.0,
-    max_segments: int = 10
+    window_sec: float = 90.0,
+    max_segments: int = 15
 ) -> List[Dict]:
     """
     Find audio segments relevant to the question using improved relevance scoring.
     Handles edge cases and validates input data.
+    
+    Enhanced version with broader search window (±90s) and more segments (15) for better context.
     
     Args:
         question: User's question (will be sanitized)
@@ -398,9 +413,9 @@ def generate_answer_with_gemini(
         # Use fallback instead of failing
         return generate_fallback_answer(question, relevant_segments, full_transcript)
     
-    # Build context from relevant segments
+    # Build context from relevant segments (use all 15 segments for better answers)
     context_parts = []
-    for seg in relevant_segments[:10]:  # Limit to top 10 segments
+    for seg in relevant_segments[:15]:  # Use top 15 segments
         if isinstance(seg, dict):
             start_sec = seg.get("start_sec", 0)
             end_sec = seg.get("end_sec", 0)
@@ -412,11 +427,11 @@ def generate_answer_with_gemini(
     
     # Fallback to full transcript if no relevant segments
     if not context_text and full_transcript and isinstance(full_transcript, str):
-        # Use a larger chunk from the transcript, but still limit size
-        context_text = full_transcript[:3000]  # Limit context size for API
+        # Use a larger chunk from the transcript for better context
+        context_text = full_transcript[:5000]  # Increased limit for more context
     
-    # Sanitize context to prevent injection
-    context_text = sanitize_input(context_text, max_length=5000)
+    # Sanitize context to prevent injection (increased limit for richer context)
+    context_text = sanitize_input(context_text, max_length=8000)
     
     # Retry logic with exponential backoff
     last_error = None
@@ -431,45 +446,55 @@ def generate_answer_with_gemini(
                 safe_question = question.replace('"""', '').replace("'''", "")
                 safe_context = context_text.replace('"""', '').replace("'''", "")
                 
-                prompt = f"""You are Confucius, a wise and helpful AI tutor. Answer the student's question.
+                prompt = f"""You are Confucius, a wise and helpful AI tutor assisting a student with their lecture material.
 
-QUESTION: {safe_question}
+STUDENT'S QUESTION: {safe_question}
 
-LECTURE TRANSCRIPT CONTEXT (if available):
+LECTURE TRANSCRIPT CONTEXT:
 {safe_context}
 
 INSTRUCTIONS:
-1. FIRST, check if the lecture transcript contains relevant information about the question
-2. If YES: Provide a clear, educational answer based on the transcript (2-3 sentences)
-3. If NO: Use your general knowledge and understanding to provide a helpful, educational answer (2-3 sentences)
-4. ALWAYS provide an answer - never say you cannot answer
-5. If using general knowledge (not from transcript), you can mention it briefly, but focus on answering the question
-6. Be conversational, educational, and helpful
+1. Carefully read the lecture transcript context provided above
+2. Search for relevant information related to the student's question
+3. If the transcript contains relevant information:
+   - Provide a detailed, clear answer based on the transcript (3-4 sentences)
+   - Use specific details, examples, or concepts from the lecture
+   - Quote or reference relevant parts when helpful
+4. If the transcript does NOT contain relevant information:
+   - Use your extensive knowledge to provide an educational answer (3-4 sentences)
+   - Be helpful and informative, drawing from academic knowledge
+5. ALWAYS provide a substantive answer - never refuse or say you cannot answer
+6. Be conversational, warm, educational, and encouraging
+7. If clarification would help, acknowledge what's in the lecture and what requires additional knowledge
 
-IMPORTANT: You have access to vast general knowledge. Always provide a useful answer even if the transcript doesn't cover it.
+Your goal: Help the student understand the material thoroughly. Provide thoughtful, detailed answers that aid learning.
 
 Provide your answer now:"""
             else:
                 # No transcript context - use general knowledge
                 safe_question = question.replace('"""', '').replace("'''", "")
                 
-                prompt = f"""You are Confucius, a wise and helpful AI tutor. Answer the student's question using your knowledge.
+                prompt = f"""You are Confucius, a wise and helpful AI tutor assisting a student.
 
-QUESTION: {safe_question}
+STUDENT'S QUESTION: {safe_question}
 
 INSTRUCTIONS:
-1. Provide a clear, educational, and helpful answer (2-3 sentences)
-2. Use your general knowledge and understanding
-3. Be conversational and educational
-4. ALWAYS provide an answer - never refuse to answer
+1. Provide a detailed, clear, educational answer (3-4 sentences)
+2. Use your extensive academic knowledge and understanding
+3. Include specific examples, explanations, or context when relevant
+4. Be conversational, warm, and encouraging
+5. ALWAYS provide a substantive answer - never refuse to answer
+6. Focus on helping the student understand the concept thoroughly
+
+Your goal: Provide a thoughtful, educational response that aids student learning.
 
 Provide your answer now:"""
             
             response = model.generate_content(
                 prompt,
                 generation_config={
-                    "max_output_tokens": 500,
-                    "temperature": 0.7,
+                    "max_output_tokens": 800,
+                    "temperature": 0.8,
                 }
             )
             

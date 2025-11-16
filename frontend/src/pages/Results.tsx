@@ -15,6 +15,8 @@ import {
   FileImage,
   ChevronDown,
   Loader2,
+  Play,
+  Pause,
 } from "lucide-react";
 import confuciusLogo from "@/assets/confucius-logo.png";
 import heroBackground from "@/assets/hero-background-2.png";
@@ -39,15 +41,18 @@ const Results = () => {
   const [error, setError] = useState<string | null>(null);
   const [videoError, setVideoError] = useState<string | null>(null);
   const [videoLoading, setVideoLoading] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   // Voice Q&A state
   const [widgetState, setWidgetState] = useState<WidgetState>("idle");
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [recordingDuration, setRecordingDuration] = useState(0);
+  const [liveTranscript, setLiveTranscript] = useState<string>("");
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const recordingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const isProcessingRef = useRef<boolean>(false); // Prevent race conditions
+  const recognitionRef = useRef<any>(null); // Web Speech API recognition instance
 
   const {
     startRecording,
@@ -225,6 +230,44 @@ const Results = () => {
           video.pause();
         }
 
+        // Initialize Web Speech API for live transcription
+        if (
+          "webkitSpeechRecognition" in window ||
+          "SpeechRecognition" in window
+        ) {
+          const SpeechRecognition =
+            (window as any).webkitSpeechRecognition ||
+            (window as any).SpeechRecognition;
+          const recognition = new SpeechRecognition();
+          recognition.continuous = true;
+          recognition.interimResults = true;
+          recognition.lang = "en-US";
+
+          recognition.onresult = (event: any) => {
+            let interim = "";
+            let final = "";
+
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+              const transcript = event.results[i][0].transcript;
+              if (event.results[i].isFinal) {
+                final += transcript + " ";
+              } else {
+                interim += transcript;
+              }
+            }
+
+            setLiveTranscript(final + interim);
+          };
+
+          recognition.onerror = (event: any) => {
+            console.error("Speech recognition error:", event.error);
+          };
+
+          recognition.start();
+          recognitionRef.current = recognition;
+        }
+
+        setLiveTranscript("");
         await startRecording();
         setWidgetState("listening");
         setRecordingDuration(0);
@@ -242,6 +285,13 @@ const Results = () => {
           clearInterval(recordingIntervalRef.current);
           recordingIntervalRef.current = null;
         }
+
+        // Stop Web Speech API
+        if (recognitionRef.current) {
+          recognitionRef.current.stop();
+          recognitionRef.current = null;
+        }
+
         const blob = await stopRecording();
         if (blob && blob.size > 0) {
           await processQuestion(blob);
@@ -267,9 +317,14 @@ const Results = () => {
     } catch (err) {
       console.error("Mic click error:", err);
       setWidgetState("idle");
+      setLiveTranscript("");
       if (recordingIntervalRef.current) {
         clearInterval(recordingIntervalRef.current);
         recordingIntervalRef.current = null;
+      }
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+        recognitionRef.current = null;
       }
     }
   };
@@ -484,6 +539,20 @@ const Results = () => {
     setChatMessages(prev => prev.filter(msg => msg.id !== id));
   };
 
+  // Toggle play/pause
+  const togglePlayPause = () => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (video.paused) {
+      video.play().catch(err => {
+        console.error("Failed to play video:", err);
+      });
+    } else {
+      video.pause();
+    }
+  };
+
   // Handle recording errors
   useEffect(() => {
     if (recordingError) {
@@ -521,6 +590,10 @@ const Results = () => {
         audioRef.current.pause();
         audioRef.current = null;
       }
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+        recognitionRef.current = null;
+      }
       isProcessingRef.current = false;
     };
   }, []);
@@ -551,7 +624,7 @@ const Results = () => {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 flex flex-col px-4 md:px-8 lg:px-16 xl:px-24 pb-4 overflow-hidden">
+        <div className="flex-1 flex flex-col px-4 md:px-8 lg:px-16 xl:px-24 pb-12 md:pb-16 overflow-hidden">
           {/* Heading */}
           <div className="mb-4 md:mb-6 animate-fade-in flex-shrink-0">
             <div className="relative inline-block">
@@ -566,12 +639,12 @@ const Results = () => {
           </div>
 
           {/* Video Player */}
-          <div className="w-full max-w-4xl animate-scale-in mb-4 flex-1 flex flex-col overflow-hidden">
+          <div className="w-full max-w-4xl animate-scale-in mb-4 flex-1 flex flex-col">
             <div className="relative group">
               {/* Glow - reduced */}
               <div className="absolute inset-0 bg-accent/3 rounded-lg blur-md group-hover:bg-accent/8 transition-all duration-500" />
 
-              <div className="relative bg-gradient-to-br from-primary/20 via-secondary/20 to-accent/20 rounded-lg overflow-hidden shadow-card aspect-video flex items-center justify-center border-2 border-accent/30 backdrop-blur-sm">
+              <div className="relative bg-gradient-to-br from-primary/20 via-secondary/20 to-accent/20 rounded-lg shadow-card aspect-video flex items-center justify-center border-2 border-accent/30 backdrop-blur-sm">
                 {isProcessing ? (
                   <div className="flex flex-col items-center gap-6 p-8">
                     {/* Animated loading dots */}
@@ -658,10 +731,12 @@ const Results = () => {
                       <video
                         ref={videoRef}
                         controls
+                        controlsList=""
                         preload="auto"
                         playsInline
-                        className="w-full h-full object-contain"
+                        className="w-full h-full object-contain rounded-lg"
                         src={videoUrl}
+                        style={{ maxHeight: "100%" }}
                         onLoadStart={() => {
                           setVideoLoading(true);
                           setVideoError(null);
@@ -718,6 +793,16 @@ const Results = () => {
                         }}
                         onPlaying={() => {
                           setVideoLoading(false);
+                          setIsPlaying(true);
+                        }}
+                        onPlay={() => {
+                          setIsPlaying(true);
+                        }}
+                        onPause={() => {
+                          setIsPlaying(false);
+                        }}
+                        onEnded={() => {
+                          setIsPlaying(false);
                         }}
                       >
                         Your browser does not support the video tag.
@@ -736,7 +821,7 @@ const Results = () => {
           </div>
 
           {/* Row under video: Download left, text centered */}
-          <div className="w-full max-w-4xl mt-4 relative flex items-center justify-between flex-shrink-0">
+          <div className="w-full max-w-4xl mt-4 pb-6 md:pb-8 relative flex items-center justify-between flex-shrink-0">
             {/* Download dropdown aligned to left edge of video */}
             <div className="relative inline-flex">
               <div className="absolute inset-0 bg-accent/10 rounded-full blur-md group-hover:blur-lg transition-all" />
@@ -789,7 +874,7 @@ const Results = () => {
           {/* Upload another video (left under the row) */}
           <Link
             to="/"
-            className="mt-2 text-accent hover:text-accent/80 flex items-center gap-2 transition-all duration-300 hover:gap-3 relative group text-sm md:text-base flex-shrink-0"
+            className="mt-4 mb-8 md:mb-12 text-accent hover:text-accent/80 flex items-center gap-2 transition-all duration-300 hover:gap-3 relative group text-sm md:text-base flex-shrink-0"
           >
             <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
             <span className="relative">
@@ -800,12 +885,16 @@ const Results = () => {
         </div>
 
         {/* Chat Bubbles */}
-        {!isProcessing && chatMessages.length > 0 && (
-          <ChatBubbles
-            messages={chatMessages}
-            onDismiss={handleDismissMessage}
-          />
-        )}
+        {!isProcessing &&
+          (widgetState !== "idle" || chatMessages.length > 0) && (
+            <ChatBubbles
+              messages={chatMessages}
+              onDismiss={handleDismissMessage}
+              widgetState={widgetState}
+              isVideoPlaying={isPlaying}
+              liveTranscript={liveTranscript}
+            />
+          )}
 
         {/* Conficius Widget */}
         {!isProcessing && (
