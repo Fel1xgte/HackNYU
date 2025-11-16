@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Download, ArrowLeft, Sparkles } from "lucide-react";
+import { Download, ArrowLeft, Sparkles, Mic } from "lucide-react";
 import confuciusAvatar from "@/assets/confucius-avatar.jpg";
 import confuciusLogo from "@/assets/confucius-logo.png";
 import heroBackground from "@/assets/hero-background-2.png";
@@ -156,7 +156,8 @@ const Results = () => {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 flex flex-col  px-36 pb-16">
+        <div className="flex-1 flex flex-col px-36 pb-16">
+          {/* Heading */}
           <div className="mb-12 animate-fade-in">
             <div className="relative inline-block">
               <h1 className="text-5xl md:text-6xl font-bold text-accent mb-4 relative z-10">
@@ -171,7 +172,7 @@ const Results = () => {
           </div>
 
           {/* Video Player */}
-          <div className="w-full max-w-4xl mb-8 animate-scale-in">
+          <div className="w-full max-w-4xl animate-scale-in">
             <div className="relative group">
               {/* Decorative corners */}
               <div className="absolute -top-2 -left-2 w-8 h-8 border-t-4 border-l-4 border-accent rounded-tl-lg opacity-60 group-hover:opacity-100 transition-opacity" />
@@ -212,27 +213,37 @@ const Results = () => {
             </div>
           </div>
 
-          {/* Download Button */}
-          <div className="relative animate-slide-in-right">
-            <div className="absolute inset-0 bg-secondary/30 rounded-full blur-xl group-hover:blur-2xl transition-all" />
-            <Button
-              size="lg"
-              onClick={handleDownload}
-              disabled={isProcessing || !videoUrl}
-              className="relative bg-secondary hover:bg-secondary/90 text-primary-foreground px-12 py-6 text-lg rounded-full shadow-card hover:shadow-xl transition-all duration-300 hover:scale-105 overflow-hidden group disabled:opacity-50"
-            >
-              <span className="absolute inset-0 bg-gradient-to-r from-transparent via-primary-foreground/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-              <Download className="mr-2 h-5 w-5 relative z-10 group-hover:animate-bounce" />
-              <span className="relative z-10">Download</span>
-            </Button>
+          {/* Row under video: Download left, text centered */}
+          <div className="w-full max-w-4xl mt-12 relative flex items-center justify-between">
+            {/* Download button aligned to left edge of video */}
+            <div className="relative inline-flex">
+              <div className="absolute inset-0 bg-secondary/30 rounded-full blur-xl group-hover:blur-2xl transition-all" />
+              <Button
+                size="lg"
+                onClick={handleDownload}
+                disabled={isProcessing || !videoUrl}
+                className="relative bg-secondary hover:bg-secondary/90 text-primary-foreground px-10 py-4 text-lg rounded-full shadow-card hover:shadow-xl transition-all duration-300 hover:scale-105 overflow-hidden group disabled:opacity-50"
+              >
+                <span className="absolute inset-0 bg-gradient-to-r from-transparent via-primary-foreground/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                <Download className="mr-2 h-5 w-5 relative z-10 group-hover:animate-bounce" />
+                <span className="relative z-10">Download</span>
+              </Button>
+            </div>
+
+            {/* Center text */}
+            <p className="whitespace-nowrap text-sm md:text-base text-primary-foreground/80">
+              <span className="italic">Confused?</span>{" "}
+              Ask{" "}
+              <span className="font-semibold">Confucius</span>
+            </p>
           </div>
 
-          {/* Back Link */}
+          {/* Upload another video (left under the row) */}
           <Link
             to="/"
-            className="mt-8 text-accent hover:text-accent/80 flex items-center gap-2 transition-all duration-300 hover:gap-3 relative group"
+            className="mt-6 text-accent hover:text-accent/80 flex items-center gap-2 transition-all duration-300 hover:gap-3 relative group"
           >
-            <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+            <ArrowLeft className="h-14 w-8 group-hover:-translate-x-1 transition-transform" />
             <span className="relative">
               Upload another video
               <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-accent scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
@@ -240,8 +251,8 @@ const Results = () => {
           </Link>
         </div>
 
-        {/* Confucius Avatar */}
-        <div className="fixed bottom-8 right-24 flex flex-col items-center gap-2 animate-fade-in animation-delay-500 group cursor-pointer">
+        {/* Confucius Avatar + Mic button */}
+        <div className="fixed bottom-12 right-24 flex flex-col items-center gap-2 animate-fade-in animation-delay-500 group">
           <span className="text-accent font-semibold text-lg group-hover:scale-110 transition-transform">
             Confucius
           </span>
@@ -254,6 +265,16 @@ const Results = () => {
             <div className="absolute inset-0 bg-accent/20 rounded-2xl blur-xl group-hover:bg-accent/40 transition-all duration-500" />
           </div>
           <div className="text-xs text-accent/60 italic">孔子</div>
+
+          {/* Mic button centered under card */}
+          <Button
+            className="mt-4 w-20 h-20 rounded-full bg-accent text-primary-foreground shadow-card hover:shadow-xl hover:scale-110 transition-all duration-300 flex items-center justify-center"
+          >
+            <Mic
+              className="text-primary-foreground"
+              style={{ width: 30, height: 30 }}
+            />
+          </Button>
         </div>
 
         {/* Chinese Decorations */}
