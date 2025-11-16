@@ -11,24 +11,27 @@ The QA (Question & Answer) service is the highlight feature of Confucius. It all
 ✅ **Smart Search** - Advanced relevance scoring to find the best transcript segments  
 ✅ **Answer Caching** - Reduces API calls by caching answers for 1 hour  
 ✅ **Retry Logic** - Automatic retries with exponential backoff for reliability  
-✅ **Robust Error Handling** - Graceful degradation when services are unavailable  
+✅ **Robust Error Handling** - Graceful degradation when services are unavailable
 
 ## Setup
 
 ### Option 1: With Gemini API (Recommended)
 
 1. Get a free Gemini API key:
+
    - Visit: https://makersuite.google.com/app/apikey
    - Sign in with your Google account
    - Create a new API key
 
 2. Create a `.env` file in the `backend/` directory:
+
    ```bash
    cd backend
    touch .env
    ```
 
 3. Add your API key to `.env`:
+
    ```
    GEMINI_API_KEY=your-api-key-here
    ```
@@ -45,6 +48,7 @@ The service will automatically use keyword-based fallback answers when the API k
 ## Verification
 
 Check your setup status:
+
 ```bash
 curl http://127.0.0.1:8000/api/qa/status
 ```
@@ -67,11 +71,13 @@ Or visit: http://127.0.0.1:8000/api/qa/status
 ## Improvements Made
 
 ### 1. Better API Key Handling
+
 - Helpful error messages when API key is missing
 - Automatic fallback to keyword matching
 - Status endpoint to check configuration
 
 ### 2. Improved Search Algorithm
+
 - Relevance scoring based on:
   - Keyword matches (60% weight)
   - Time proximity (30% weight)
@@ -80,22 +86,26 @@ Or visit: http://127.0.0.1:8000/api/qa/status
 - Better segment ranking
 
 ### 3. Fallback Answer Generation
+
 - Works without API keys
 - Keyword-based matching
 - Provides relevant transcript segments
 - Helpful guidance messages
 
 ### 4. Answer Caching
+
 - In-memory cache (1 hour TTL)
 - Reduces API calls for repeated questions
 - Faster response times
 
 ### 5. Retry Logic
+
 - 3 retry attempts with exponential backoff
 - Handles temporary API failures
 - Graceful degradation
 
 ### 6. Better Error Handling
+
 - User-friendly error messages
 - Detailed logging for debugging
 - Never fails completely - always provides some answer
@@ -103,15 +113,18 @@ Or visit: http://127.0.0.1:8000/api/qa/status
 ## Troubleshooting
 
 ### "AI service is not configured"
+
 - **Solution**: Set `GEMINI_API_KEY` in your `.env` file
 - **Alternative**: Service will use fallback mode automatically
 
 ### "Empty response from Gemini"
+
 - **Cause**: API quota exceeded or invalid key
 - **Solution**: Check your API key and quota at https://makersuite.google.com/app/apikey
 - **Fallback**: Service automatically uses keyword matching
 
 ### Answers not relevant
+
 - **Cause**: Transcript might not contain the information
 - **Solution**: The service will indicate when using general knowledge vs transcript-based answers
 
@@ -149,4 +162,3 @@ print(answer["answerText"])
 - [ ] Semantic search using embeddings
 - [ ] Answer quality scoring
 - [ ] User feedback integration
-
