@@ -168,6 +168,14 @@ async def get_video_status():
         
     status = STATUS_FILE.read_text().strip()
     
+    # Check if video exists even if status says stitching_video (recovery from crash)
+    if status == "stitching_video" or "stitching_video" in status:
+        final_video_path = Config.FINAL_OUTPUT_DIR / Config.FINAL_VIDEO_NAME
+        if final_video_path.exists():
+            # Video exists but status wasn't updated - fix it
+            STATUS_FILE.write_text("complete")
+            return {"status": "complete", "download_url": "/get-video/"}
+    
     if status == "complete":
         return {"status": "complete", "download_url": "/get-video/"}
     elif "failed" in status:

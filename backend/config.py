@@ -93,6 +93,9 @@ class Config:
     VOICE_STYLE = 0.4  # Moderate expressiveness
     VOICE_SPEAKER_BOOST = True
     
+    # Audio speed adjustment for faster pacing
+    AUDIO_SPEED_MULTIPLIER = 1.15  # 15% faster (1.15x speed) for more concise narration
+    
     # ============================================
     # Google Gemini Configuration
     # ============================================

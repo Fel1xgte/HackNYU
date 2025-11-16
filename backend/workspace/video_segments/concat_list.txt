@@ -1,2 +1,6 @@
+file '/Users/krutinrahtod/Desktop/Desktop/WEB/webCodes/latestCodee/HackNYU/backend/workspace/video_segments/segment_01.mp4'
 file '/Users/krutinrahtod/Desktop/Desktop/WEB/webCodes/latestCodee/HackNYU/backend/workspace/video_segments/segment_02.mp4'
+file '/Users/krutinrahtod/Desktop/Desktop/WEB/webCodes/latestCodee/HackNYU/backend/workspace/video_segments/segment_03.mp4'
+file '/Users/krutinrahtod/Desktop/Desktop/WEB/webCodes/latestCodee/HackNYU/backend/workspace/video_segments/segment_04.mp4'
 file '/Users/krutinrahtod/Desktop/Desktop/WEB/webCodes/latestCodee/HackNYU/backend/workspace/video_segments/segment_05.mp4'
+file '/Users/krutinrahtod/Desktop/Desktop/WEB/webCodes/latestCodee/HackNYU/backend/workspace/video_segments/segment_06.mp4'

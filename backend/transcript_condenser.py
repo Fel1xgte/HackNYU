@@ -80,22 +80,34 @@ def generate_slide_plan(model, full_transcript, course_title):
     if len(full_transcript.strip()) < 100:
         print(f"⚠️  WARNING: Very short transcript ({len(full_transcript)} chars). Results may be poor.", file=sys.stderr)
 
+    # Calculate target duration per slide (90 seconds total / 6 slides = 15 seconds per slide)
+    TARGET_DURATION_PER_SLIDE = 15  # seconds
+    NUM_SLIDES = 6
+
     prompt = f"""
 You are an expert AI Tutor slide generator.
 
-A long lecture transcript is provided below. Summarize it into a clear, short teaching slide deck that fits into a 1–2 minute explanation video.
+A long lecture transcript is provided below. Summarize it into a clear, concise teaching slide deck that fits into exactly 90 seconds of video narration.
 
 TRANSCRIPT:
 ----------------
 {full_transcript}
 ----------------
 
+CRITICAL DURATION REQUIREMENT:
+- The final video must be exactly 90 seconds total
+- You must create exactly {NUM_SLIDES} slides
+- Each slide's speaker_notes should result in approximately {TARGET_DURATION_PER_SLIDE} seconds of speech when spoken at a natural, fast-paced pace
+- Write concise, direct speaker notes - prioritize key information only
+- Be brief and engaging - aim for 2-3 sentences maximum per slide's speaker_notes
+- The tone should be quick and fast-paced while remaining clear and educational
+
 Your tasks:
-1. Break the content into 6 slides.
+1. Break the content into exactly {NUM_SLIDES} slides.
 2. For each slide, produce:
-   - "title": short & clear
-   - "points": 2–4 bullet points summarizing the key ideas
-   - "speaker_notes": one short paragraph explaining the concept
+   - "title": short & clear (3-6 words)
+   - "points": 2–4 bullet points summarizing the key ideas (keep concise)
+   - "speaker_notes": a brief, fast-paced paragraph (2-3 sentences max) that will take approximately {TARGET_DURATION_PER_SLIDE} seconds to speak
 
 Return ONLY valid JSON:
 
