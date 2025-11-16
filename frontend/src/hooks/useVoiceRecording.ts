@@ -33,11 +33,14 @@ export function useVoiceRecording(): UseVoiceRecordingReturn {
   const vadCheckRef = useRef<number | null>(null);
   const lastSoundTimeRef = useRef<number>(Date.now());
   const vadActiveRef = useRef<boolean>(false);
+  const recordingStartTimeRef = useRef<number>(0);
+  const mimeTypeRef = useRef<string>("audio/webm");
 
   // VAD configuration
-  const SILENCE_THRESHOLD_MS = 750; // 750ms of silence to auto-stop
+  const SILENCE_THRESHOLD_MS = 2000; // 2 seconds of silence to auto-stop (increased to prevent premature stops)
   const ANALYZE_INTERVAL_MS = 100; // Check audio level every 100ms
   const MAX_RECORDING_DURATION_MS = 60000; // 60 seconds max recording
+  const MIN_RECORDING_DURATION_MS = 500; // Minimum 500ms to ensure audio is collected
 
   /**
    * Cleanup function to stop all recording resources
@@ -127,6 +130,7 @@ export function useVoiceRecording(): UseVoiceRecordingReturn {
       });
 
       mediaRecorderRef.current = mediaRecorder;
+      mimeTypeRef.current = mimeType || "audio/webm";
 
       // Handle data availability
       mediaRecorder.ondataavailable = (event) => {
@@ -145,12 +149,18 @@ export function useVoiceRecording(): UseVoiceRecordingReturn {
 
       // Handle recording stop
       const handleStop = () => {
-        const blob = new Blob(audioChunksRef.current, {
-          type: mimeType || "audio/webm",
-        });
-        setAudioBlob(blob);
-        setIsRecording(false);
-        cleanup();
+        // Small delay to ensure all chunks are collected
+        setTimeout(() => {
+          const blob = new Blob(audioChunksRef.current, {
+            type: mimeType || "audio/webm",
+          });
+          setAudioBlob(blob);
+          setIsRecording(false);
+          // Don't cleanup here if manually stopped - let stopRecording handle it
+          if (!vadActiveRef.current) {
+            cleanup();
+          }
+        }, 100);
       };
 
       mediaRecorder.onstop = handleStop;
@@ -159,6 +169,7 @@ export function useVoiceRecording(): UseVoiceRecordingReturn {
       mediaRecorder.start(100); // Collect data every 100ms
       setIsRecording(true);
       const recordingStartTime = Date.now();
+      recordingStartTimeRef.current = recordingStartTime;
 
       // Create audio context for VAD
       const audioContext = new AudioContext();
@@ -231,54 +242,123 @@ export function useVoiceRecording(): UseVoiceRecordingReturn {
   }, [cleanup]);
 
   /**
+   * Internal function to stop recording and create blob
+   */
+  const stopRecordingInternal = useCallback((resolve: (blob: Blob | null) => void) => {
+    // Stop VAD check first
+    vadActiveRef.current = false;
+    if (vadCheckRef.current !== null) {
+      cancelAnimationFrame(vadCheckRef.current);
+      vadCheckRef.current = null;
+    }
+
+    if (!mediaRecorderRef.current) {
+      // Recording already stopped, try to create blob from existing chunks
+      const blob = new Blob(audioChunksRef.current, {
+        type: mimeTypeRef.current,
+      });
+      if (blob.size === 0) {
+        console.warn("No media recorder and empty chunks");
+        resolve(null);
+      } else {
+        resolve(blob);
+      }
+      return;
+    }
+
+    // Set up stop handler with timeout
+    let stopTimeout: NodeJS.Timeout | null = null;
+    let stopHandlerFired = false;
+    
+    const stopHandler = () => {
+      if (stopHandlerFired) {
+        return; // Prevent double execution
+      }
+      stopHandlerFired = true;
+      
+      if (stopTimeout) {
+        clearTimeout(stopTimeout);
+        stopTimeout = null;
+      }
+
+      // Wait a bit for all chunks to be collected
+      setTimeout(() => {
+        // Use the MIME type that was set during recording
+        const blob = new Blob(audioChunksRef.current, {
+          type: mimeTypeRef.current,
+        });
+
+        // Validate blob has content
+        if (blob.size === 0) {
+          console.warn("Recording produced empty blob, chunks:", audioChunksRef.current.length, "chunk sizes:", audioChunksRef.current.map(c => c.size));
+          setAudioBlob(null);
+          setIsRecording(false);
+          cleanup();
+          resolve(null);
+          return;
+        }
+
+        console.log("Recording stopped successfully, blob size:", blob.size, "chunks:", audioChunksRef.current.length);
+        setAudioBlob(blob);
+        setIsRecording(false);
+        cleanup();
+        resolve(blob);
+      }, 200); // Give time for final chunks to arrive
+    };
+
+    // Set up stop handler
+    mediaRecorderRef.current.onstop = stopHandler;
+
+    // Set timeout in case onstop doesn't fire
+    stopTimeout = setTimeout(() => {
+      console.warn("MediaRecorder stop timeout, creating blob from available chunks");
+      stopHandler();
+    }, 1000); // Increased timeout
+
+    try {
+      if (mediaRecorderRef.current.state !== "inactive") {
+        // Request final data before stopping
+        mediaRecorderRef.current.requestData();
+        mediaRecorderRef.current.stop();
+      } else {
+        // Already stopped, try to get blob from chunks
+        if (stopTimeout) {
+          clearTimeout(stopTimeout);
+        }
+        stopHandler();
+      }
+    } catch (e) {
+      if (stopTimeout) {
+        clearTimeout(stopTimeout);
+      }
+      console.error("Error stopping recording:", e);
+      // Try to create blob anyway
+      stopHandler();
+    }
+  }, [cleanup]);
+
+  /**
    * Stop recording and return the audio blob
    * 
    * @returns Promise resolving to audio Blob or null if recording failed
    */
   const stopRecording = useCallback(async (): Promise<Blob | null> => {
     return new Promise((resolve) => {
-      if (!mediaRecorderRef.current) {
-        resolve(null);
+      // Check minimum recording duration
+      const recordingDuration = Date.now() - recordingStartTimeRef.current;
+      
+      if (recordingDuration < MIN_RECORDING_DURATION_MS) {
+        console.warn(`Recording too short (${recordingDuration}ms), waiting for minimum duration...`);
+        // Wait a bit more to ensure data is collected
+        setTimeout(() => {
+          stopRecordingInternal(resolve);
+        }, MIN_RECORDING_DURATION_MS - recordingDuration + 200);
         return;
       }
 
-      // Stop VAD check
-      vadActiveRef.current = false;
-      if (vadCheckRef.current !== null) {
-        cancelAnimationFrame(vadCheckRef.current);
-        vadCheckRef.current = null;
-      }
-
-      // Set up stop handler
-      const originalOnStop = mediaRecorderRef.current.onstop;
-      mediaRecorderRef.current.onstop = () => {
-        const blob = new Blob(audioChunksRef.current, {
-          type: "audio/webm",
-        });
-        setAudioBlob(blob);
-        setIsRecording(false);
-        cleanup();
-        resolve(blob);
-      };
-
-      try {
-        if (mediaRecorderRef.current.state !== "inactive") {
-          mediaRecorderRef.current.stop();
-        } else {
-          // Already stopped, resolve immediately
-          const blob = new Blob(audioChunksRef.current, {
-            type: "audio/webm",
-          });
-          resolve(blob);
-          cleanup();
-        }
-      } catch (e) {
-        console.error("Error stopping recording:", e);
-        cleanup();
-        resolve(null);
-      }
+      stopRecordingInternal(resolve);
     });
-  }, [cleanup]);
+  }, [stopRecordingInternal]);
 
   // Cleanup on unmount
   useEffect(() => {

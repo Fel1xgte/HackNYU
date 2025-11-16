@@ -122,7 +122,7 @@ class Config:
     # ============================================
     # ElevenLabs Voice Configuration
     # ============================================
-    VOICE_ID = "pNInz6obpgDQGcFmaJgB"  # Adam - deep, authoritative
+    VOICE_ID = "X1tufN2s4pZ5Z7j8p23n"  # Callum
     VOICE_MODEL = "eleven_multilingual_v2"
     VOICE_STABILITY = 0.7  # Calm, steady narration
     VOICE_SIMILARITY = 0.8  # High consistency

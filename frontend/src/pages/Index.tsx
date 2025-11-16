@@ -154,9 +154,9 @@ const Index = () => {
                 <span className="text-accent">Confucius</span>
               </h1>
               <p className="text-lg md:text-xl text-primary-foreground/95 leading-relaxed font-body text-on-gradient-light">
-                An AI tutor that turns your lecture videos
+                An interactive AI tutor that transforms your
                 <br />
-                into simple and clear summaries.
+                 lecture videos into 90 sec crash course
               </p>
               <div className="mt-8 flex gap-4">
                 <div className="h-1 w-24 bg-accent rounded-full" />

@@ -1,59 +1,63 @@
 {
-  "course_title": "IC Design Process: Beginner's Overview to VLSI",
+  "course_title": "IC Design Process: Beginner's VLSI Overview",
   "slides": [
     {
-      "title": "Course Overview: IC Design",
+      "title": "Welcome to IC Design Process",
       "points": [
-        "Beginner's overview to VLSI technology.",
-        "Connects HDL to actual silicon circuit.",
-        "Covers RTL, verification, synthesis, physical design, manufacturing."
+        "Beginner's overview to VLSI technology",
+        "Connects HDL code to actual silicon circuits",
+        "Covers RTL, verification, synthesis, physical design, manufacturing"
       ],
-      "speaker_notes": "Welcome to IC Design Process, a beginner's overview of VLSI. This course simplifies the common problem of connecting your hardware description language code to the actual silicon circuit. We'll explore the theoretical foundations behind RTL design, functional verification, synthesis, physical design, and manufacturing, without focusing on specific coding."
+      "speaker_notes": "Hello and welcome to the IC Design Process course! This beginner's overview to VLSI technology aims to solve a common problem: connecting your Hardware Description Language code to the actual silicon circuit. We'll simplify this by exploring the complete IC design, verification, synthesis, physical design, and manufacturing processes, focusing on theory rather than specific coding."
     },
     {
-      "title": "What are ICs and SOCs?",
+      "title": "Course Structure at a Glance",
       "points": [
-        "IC: Electronic circuits on tiny semiconductor plate.",
-        "SOC: Complete system on a single chip.",
-        "Billions of transistors in a tiny space."
+        "Short history of ICs & digital fundamentals",
+        "Hardware Description Language (HDL) concept",
+        "IC design process: Front-end & Back-end",
+        "IC manufacturing process & course summary"
       ],
-      "speaker_notes": "An Integrated Circuit, or IC, is a device with numerous electronic circuits built onto a tiny silicon plate, capable of holding billions of transistors. A System-on-Chip, or SOC, takes this further by integrating an entire electronic system onto a single chip. While designs differ, manufacturing for both analog and digital ICs is quite similar, and this course focuses on digital IC processes."
+      "speaker_notes": "Our course outlines six key sessions. We'll start with a brief history of ICs and refresh digital circuit fundamentals. Next, we'll dive into the idea of Hardware Description Languages, followed by an overview of the entire IC design process, covering both front-end and back-end stages, before finally looking at manufacturing."
     },
     {
-      "title": "Evolution of VLSI Technology",
+      "title": "What are Integrated Circuits (ICs)?",
       "points": [
-        "Early ICs: few components (SSI).",
-        "Growth through MSI, LSI to billions of transistors.",
-        "Today: VLSI (Very Large-Scale Integration)."
+        "Many electronic circuits on tiny semiconductor (silicon)",
+        "System-on-Chip (SoC): complete system on one chip",
+        "Analog vs. Digital ICs (focus on Digital)"
       ],
-      "speaker_notes": "IC technology rapidly evolved from fabricating just a few components in the 1960s, known as Small-Scale Integration or SSI, to thousands, then tens of thousands in the 70s, designated LSI. By the 2000s, chips housed billions of transistors. Today, irrespective of the exact count, all advanced IC manufacturing is broadly termed Very Large-Scale Integration, or VLSI."
+      "speaker_notes": "An Integrated Circuit, or IC, is a tiny silicon device housing a vast number of electronic circuits. A System-on-Chip, or SoC, takes this further by integrating all components of a complete electronic system onto a single chip. ICs can be analog or digital; this course specifically explains the digital IC design process, where HDLs are predominantly used."
     },
     {
-      "title": "Digital Circuit Fundamentals",
+      "title": "Evolution: From Vacuum Tubes to ICs",
       "points": [
-        "Data is binary (0s and 1s).",
-        "Transistors act as on/off switches.",
-        "Combinational vs. Sequential circuits (with memory)."
+        "Early digital switches: bulky vacuum tubes",
+        "Transistor invention (1947): smaller silicon devices",
+        "Breakthrough: integrate all components onto a single silicon piece",
+        "Birth of the Integrated Circuit (IC)"
       ],
-      "speaker_notes": "Before designing ICs, remember digital circuits convert real-world data into binary. Transistors act as fundamental switches, turning voltage on and off to process these 0s and 1s. Circuits are categorized as combinational, where output depends only on current inputs, or sequential, which include memory elements and depend on input history."
+      "speaker_notes": "Digital circuits rely on switches, which were once bulky vacuum tubes. The invention of the transistor in 1947 revolutionized electronics, replacing vacuum tubes with smaller silicon devices. The breakthrough idea was to integrate all these transistors and other components directly onto a single silicon piece, giving birth to the integrated circuit and launching IC technology."
     },
     {
-      "title": "Building Blocks: Gates & Flip-Flops",
+      "title": "The Scale of Integration: VLSI",
       "points": [
-        "Digital circuits use logic gates (AND, OR, NOT...).",
-        "Flip-flops are 1-bit memory elements.",
-        "All digital circuits ultimately built from transistors."
+        "Early ICs: few devices (10s) and logic gates",
+        "Transistor count rapidly increased to billions by 2008",
+        "Classifications: SSI, MSI, LSI based on component count",
+        "VLSI: Very Large-Scale Integration"
       ],
-      "speaker_notes": "Digital circuits are constructed from logic gates like AND, OR, and NOT, which perform basic boolean operations. For memory, we use flip-flops, capable of storing a single bit. Crucially, all flip-flops are built from logic gates, and all logic gates are fundamentally made using transistors. So, every digital circuit boils down to a vast array of transistors."
+      "speaker_notes": "Early ICs contained just a few components, perhaps a dozen transistors. However, this count exploded over the decades, reaching billions by 2008. This massive growth led to classifications like Small-Scale Integration (SSI), Medium-Scale Integration (MSI), and Large-Scale Integration (LSI, marking the progression to millions of transistors on a single chip."
     },
     {
-      "title": "Abstraction with HDLs",
+      "title": "VLSI Today & Key Takeaways",
       "points": [
-        "Complex circuits involve billions of transistors.",
-        "HDLs hide transistor-level details.",
-        "Enable efficient, abstract digital design."
+        "All modern ICs broadly fall under VLSI",
+        "VLSI = Very Large-Scale Integration",
+        "Course provides foundational understanding of digital IC design",
+        "Connects theory to silicon production"
       ],
-      "speaker_notes": "Given that modern digital circuits involve billions of transistors, designing at that level is simply impractical. This is where Hardware Description Languages, or HDLs, come in. HDLs allow us to model complex digital circuits at a higher, more abstract level, effectively hiding the intricate transistor-level details and simplifying the entire design process."
+      "speaker_notes": "Today, regardless of the precise transistor count, all advanced IC manufacturing technologies are broadly termed Very Large-Scale Integration, or VLSI. This course provides a clear, foundational understanding of the entire digital IC design and manufacturing process, bridging the gap between theory and silicon production for beginners."
     }
   ]
 }

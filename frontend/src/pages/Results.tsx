@@ -294,12 +294,14 @@ const Results = () => {
 
         const blob = await stopRecording();
         if (blob && blob.size > 0) {
+          console.log("Audio recorded successfully, size:", blob.size, "bytes");
           await processQuestion(blob);
         } else {
+          console.error("Failed to record audio - blob is null or empty");
           setWidgetState("idle");
           const errorMsg: ChatMessage = {
             id: `error-${Date.now()}`,
-            text: "No audio was recorded. Please try again.",
+            text: "No audio was recorded. Please ensure your microphone is working and try again. Speak clearly and wait a moment before stopping.",
             isUser: false,
             timestamp: Date.now(),
           };
@@ -641,11 +643,11 @@ const Results = () => {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 flex flex-col px-4 md:px-8 lg:px-16 xl:px-24 pb-12 md:pb-16 overflow-hidden">
+        <div className="flex-1 flex flex-col px-4 md:px-8 lg:px-16 xl:px-24 pb-32 md:pb-40 overflow-y-auto min-h-0">
           {/* Heading */}
           <div className="mb-4 md:mb-6 animate-fade-in flex-shrink-0">
             <div className="relative inline-block">
-              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-accent mb-2 relative z-10 font-body-elegant text-on-gradient">
+              <h1 className="text-4xl md:text-3xl lg:text-5xl font-bold text-accent mb-2 relative z-10 font-body-elegant text-on-gradient">
                 Clarity for Your Lecture
               </h1>
             </div>
@@ -656,12 +658,12 @@ const Results = () => {
           </div>
 
           {/* Video Player */}
-          <div className="w-full max-w-4xl animate-scale-in mb-4 flex-1 flex flex-col">
-            <div className="relative group">
+          <div className="w-full max-w-4xl animate-scale-in mb-8 md:mb-10 flex flex-col flex-shrink-0">
+            <div className="relative group w-full">
               {/* Glow - reduced */}
               <div className="absolute inset-0 bg-accent/3 rounded-lg blur-md group-hover:bg-accent/8 transition-all duration-500" />
 
-              <div className="relative bg-gradient-to-br from-primary/20 via-secondary/20 to-accent/20 rounded-lg shadow-card aspect-video flex items-center justify-center border-2 border-accent/30 backdrop-blur-sm">
+              <div className="relative bg-gradient-to-br from-primary/20 via-secondary/20 to-accent/20 rounded-lg shadow-card aspect-video flex items-center justify-center border-2 border-accent/30 backdrop-blur-sm w-full">
                 {isProcessing ? (
                   <div className="flex flex-col items-center gap-6 p-8">
                     {/* Animated loading dots */}
@@ -753,7 +755,6 @@ const Results = () => {
                         playsInline
                         className="w-full h-full object-contain rounded-lg"
                         src={videoUrl}
-                        style={{ maxHeight: "100%" }}
                         onLoadStart={() => {
                           setVideoLoading(true);
                           setVideoError(null);
@@ -853,68 +854,73 @@ const Results = () => {
             </div>
           </div>
 
-          {/* Row under video: Download left, text centered */}
-          <div className="w-full max-w-4xl mt-4 pb-6 md:pb-8 relative flex items-center justify-between flex-shrink-0">
-            {/* Download dropdown aligned to left edge of video */}
-            <div className="relative inline-flex">
-              <div className="absolute inset-0 bg-accent/10 rounded-full blur-md group-hover:blur-lg transition-all" />
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    size="default"
-                    disabled={isProcessing || !videoUrl}
-                    className="relative bg-accent hover:bg-accent/90 text-primary-foreground px-6 py-2 text-base rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 disabled:opacity-50 border border-accent/60 hover:border-accent"
-                    aria-label="Download options"
+          {/* Elements under video: stacked vertically with proper alignment */}
+          <div className="w-full max-w-4xl mt-0 flex flex-col items-start gap-5 flex-shrink-0 pb-20 md:pb-32">
+            {/* Download dropdown and Confused text - side by side */}
+            <div className="relative w-full flex items-center justify-between gap-4">
+              {/* Download dropdown */}
+              <div className="relative inline-flex">
+                <div className="absolute inset-0 bg-accent/10 rounded-full blur-md group-hover:blur-lg transition-all" />
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      size="default"
+                      disabled={isProcessing || !videoUrl}
+                      className="relative bg-accent hover:bg-accent/90 text-primary-foreground px-6 py-2 text-base rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 disabled:opacity-50 border border-accent/60 hover:border-accent"
+                      aria-label="Download options"
+                    >
+                      <Download className="mr-2 h-5 w-5" />
+                      Download
+                      <ChevronDown className="ml-2 h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="start"
+                    className="w-56 bg-gray-900/95 backdrop-blur-sm border border-gray-700 shadow-xl text-white"
                   >
-                    <Download className="mr-2 h-5 w-5" />
-                    Download
-                    <ChevronDown className="ml-2 h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  align="start"
-                  className="w-56 bg-card/98 backdrop-blur-sm border border-accent/30 shadow-xl"
-                >
-                  <DropdownMenuItem
-                    onClick={handleDownloadVideo}
-                    disabled={isProcessing || !videoUrl}
-                    className="cursor-pointer focus:bg-accent/20 focus:text-accent-foreground"
-                    aria-label="Download video file"
-                  >
-                    <Video className="mr-2 h-4 w-4" />
-                    <span>Download as Video</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={handleDownloadSlides}
-                    disabled={isProcessing}
-                    className="cursor-pointer focus:bg-accent/20 focus:text-accent-foreground"
-                    aria-label="Download slides as ZIP"
-                  >
-                    <FileImage className="mr-2 h-4 w-4" />
-                    <span>Download as Slides</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                    <DropdownMenuItem
+                      onClick={handleDownloadVideo}
+                      disabled={isProcessing || !videoUrl}
+                      className="cursor-pointer text-white hover:bg-gray-800 focus:bg-gray-800 focus:text-white"
+                      aria-label="Download video file"
+                    >
+                      <Video className="mr-2 h-4 w-4" />
+                      <span>Download as Video</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={handleDownloadSlides}
+                      disabled={isProcessing}
+                      className="cursor-pointer text-white hover:bg-gray-800 focus:bg-gray-800 focus:text-white"
+                      aria-label="Download slides as ZIP"
+                    >
+                      <FileImage className="mr-2 h-4 w-4" />
+                      <span>Download as Slides</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+
+              {/* Right-aligned text */}
+              <p className="text-sm md:text-base text-primary-foreground/90 font-medium text-right">
+                <span className="italic">Confused?</span> Ask{" "}
+                <span className="font-semibold font-body-elegant">
+                  Confucius
+                </span>
+              </p>
             </div>
 
-            {/* Center text */}
-            <p className="whitespace-nowrap text-sm md:text-base text-primary-foreground/90 font-medium">
-              <span className="italic">Confused?</span> Ask{" "}
-              <span className="font-semibold font-body-elegant">Confucius</span>
-            </p>
+            {/* Upload another video link */}
+            <Link
+              to="/"
+              className="text-accent hover:text-accent/80 flex items-center gap-2 transition-all duration-300 hover:gap-3 relative group text-sm md:text-base"
+            >
+              <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+              <span className="relative">
+                Upload another video
+                <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-accent scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
+              </span>
+            </Link>
           </div>
-
-          {/* Upload another video (left under the row) */}
-          <Link
-            to="/"
-            className="mt-4 mb-8 md:mb-12 text-accent hover:text-accent/80 flex items-center gap-2 transition-all duration-300 hover:gap-3 relative group text-sm md:text-base flex-shrink-0"
-          >
-            <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
-            <span className="relative">
-              Upload another video
-              <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-accent scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
-            </span>
-          </Link>
         </div>
 
         {/* Chat Bubbles */}
