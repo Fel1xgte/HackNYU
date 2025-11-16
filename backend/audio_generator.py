@@ -241,10 +241,10 @@ def generate_all_slide_audios(slides_json_path: str) -> List[str]:
         return []
 
 
-if __name__ == "__main__":
+def main():
     """
-    Command-line entry point for standalone execution.
-    Generates audio for all slides in generated_slides.json.
+    Main function for generating audio for all slides.
+    Can be called from other scripts or run standalone.
     """
     print("=" * 70)
     print("🎙️  CONFUCIUS AUDIO GENERATOR")
@@ -255,14 +255,27 @@ if __name__ == "__main__":
     if not os.path.exists(json_path):
         print(f"\n❌ Error: {json_path} not found!", file=sys.stderr)
         print("   Please run slides_generator.py first", file=sys.stderr)
-        sys.exit(1)
+        raise FileNotFoundError(f"{json_path} not found")
     
     audio_paths = generate_all_slide_audios(json_path)
     
     if audio_paths:
         print(f"\n✨ Audio generation complete!")
         print(f"📁 Output directory: {Config.GENERATED_AUDIO_DIR}")
-        sys.exit(0)
+        return audio_paths
     else:
         print(f"\n❌ Audio generation failed!")
+        raise Exception("Audio generation failed")
+
+
+if __name__ == "__main__":
+    """
+    Command-line entry point for standalone execution.
+    Generates audio for all slides in generated_slides.json.
+    """
+    try:
+        main()
+        sys.exit(0)
+    except Exception as e:
+        print(f"\n❌ Error: {e}", file=sys.stderr)
         sys.exit(1)

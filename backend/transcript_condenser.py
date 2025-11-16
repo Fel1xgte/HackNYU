@@ -2,192 +2,159 @@ import json
 import os
 import sys
 import re
-# import base64  <- No longer needed
-from openai import OpenAI
-from config import Config
-from env_loader import get_api_key
-
-# ================================
-# CONFIG
-# ================================
-API_KEY_ENV_VAR = "OPENROUTER_API_KEY"
-
-# TEXT MODEL (slide JSON generation)
-TEXT_MODEL = "nvidia/nemotron-4-340b-instruct"
-
-# IMAGE MODEL (PNG slide generation)
-# --- REMOVED ---
-# IMAGE_MODEL = "black-forest-labs/flux-dev"
-# The 'slides.py' script now handles image generation.
-
-# ================================
-# GLOBAL SLIDESHOW SUPER PROMPT (your design spec)
-# ================================
-GLOBAL_DESIGN_PROMPT = r"""
-[ YOUR FULL JSON DESIGN SPEC HERE ]
-(This is still used by the TEXT_MODEL to generate the JSON)
-"""
+import google.generativeai as genai
 
 
-# ================================
-# INIT OPENROUTER CLIENT
-# ================================
-def create_client():
-    api_key = get_api_key(API_KEY_ENV_VAR, required=True)
+API_KEY_ENV_VAR = "GEMINI_API_KEY"
+MODEL_NAME = "gemini-2.5-flash"
+
+INPUT_JSON_PATH = "./workspace/decoded_video.json"
+OUTPUT_JSON_PATH = "./workspace/generated_slides.json"
+
+
+# ------------------------------------------------------
+# Gemini Client Initialization
+# ------------------------------------------------------
+
+def create_gemini_client():
+    api_key = os.environ.get(API_KEY_ENV_VAR)
     if not api_key:
-        print(f"❌ ERROR: Missing environment variable: {API_KEY_ENV_VAR}")
+        print(f"❌ ERROR: {API_KEY_ENV_VAR} is not set.", file=sys.stderr)
+        return None
+    
+    try:
+        client = genai.Client(api_key=api_key)
+        print(f"✨ Gemini client initialized: {MODEL_NAME}")
+        return client
+    except Exception as e:
+        print(f"❌ Failed to initialize Gemini client: {e}", file=sys.stderr)
         return None
 
-    return OpenAI(
-        base_url="https://openrouter.ai/api/v1",
-        api_key=api_key,
-    )
 
 
-# ================================
-# CLEAN JSON RESPONSE
-# ================================
+# ------------------------------------------------------
+# JSON Cleaner
+# ------------------------------------------------------
+
 def clean_json_response(raw):
+    """
+    Removes ```json ... ``` or extracts the first {...} block.
+    """
     m = re.search(r'```json\s*([\s\S]*?)```', raw)
     if m:
-        return m.group(1)
+        return m.group(1).strip()
 
     m = re.search(r'\{[\s\S]*\}', raw)
     if m:
-        return m.group(0)
+        return m.group(0).strip()
 
     return raw.strip()
 
 
-# ================================
-# 1. TEXT GENERATION (JSON SLIDE)
-# ================================
-def generate_slide_json(client, ocr_text, speech_text, caption):
+
+# ------------------------------------------------------
+# LLM: Generate Slide Plan From Full Transcript
+# ------------------------------------------------------
+
+def generate_slide_plan(client, full_transcript, course_title):
+    """
+    The real NotebookLM-style summarizer:
+    Takes a long transcript → outputs 6 slides with title/points/speaker_notes.
+    """
+
     prompt = f"""
-You are a world-class instructional designer and slide architect.
+You are an expert AI Tutor slide generator.
 
-Follow this global slide design specification:
-{GLOBAL_DESIGN_PROMPT}
+A long lecture transcript is provided below. Summarize it into a clear, short teaching slide deck that fits into a 1–2 minute explanation video.
 
-Now generate ONE slide in JSON based on:
+TRANSCRIPT:
+----------------
+{full_transcript}
+----------------
 
-OCR:
-{ocr_text}
+Your tasks:
+1. Break the content into 6 slides.
+2. For each slide, produce:
+   - "title": short & clear
+   - "points": 2–4 bullet points summarizing the key ideas
+   - "speaker_notes": one short paragraph explaining the concept
 
-Speech:
-{speech_text}
+Return ONLY valid JSON:
 
-Caption:
-{caption}
-
-Return ONLY JSON:
 {{
-  "title": "...",
-  "key_message": "...",
-  "points": ["...", "..."],
-  "speaker_notes": "..."
+  "course_title": "{course_title}",
+  "slides": [
+    {{
+      "title": "...",
+      "points": ["...", "..."],
+      "speaker_notes": "..."
+    }}
+  ]
 }}
 """
 
     try:
-        res = client.chat.completions.create(
-            model=TEXT_MODEL,
-            messages=[
-                {"role": "system", "content": "You generate clean slide JSON following the global design prompt."},
-                {"role": "user", "content": prompt}
-            ]
+        response = client.models.generate_content(
+            model=MODEL_NAME,
+            contents=prompt
         )
-        
-        content = res.choices[0].message.content
-        cleaned = clean_json_response(content)
+        raw_text = response.text
+        cleaned = clean_json_response(raw_text)
         return json.loads(cleaned)
 
     except Exception as e:
-        print("❌ JSON generation error:", e)
+        print(f"❌ JSON parse error: {e}", file=sys.stderr)
         return {
-            "title": "Error",
-            "key_message": "",
-            "points": [],
-            "speaker_notes": str(e)
+            "course_title": course_title,
+            "slides": [
+                {
+                    "title": "Error Occurred",
+                    "points": ["Model failed"],
+                    "speaker_notes": "Parsing error occurred."
+                }
+            ]
         }
 
 
-# ================================
-# 2. IMAGE GENERATION (PNG SLIDE)
-# ================================
-# --- REMOVED ---
-# The 'generate_slide_png' function was removed.
-# 'slides.py' is now responsible for this.
 
+# ------------------------------------------------------
+# Step 1: Merge Transcript
+# ------------------------------------------------------
 
-# ================================
-# MAIN PIPELINE
-# ================================
-def process_transcript(client, data):
+def load_full_transcript():
+    data = json.load(open(INPUT_JSON_PATH, "r"))
     audio_segments = data.get("audio_segments", [])
-    frames = data.get("visual_keyframes", [])
 
-    slides = [f for f in frames if f.get("kind") == "slide"]
-    slides.sort(key=lambda x: x["time_sec"])
+    # merge into one mega transcript string
+    full_text = " ".join(seg["text"] for seg in audio_segments)
 
-    result_json = []
+    # fallback title
+    title = data.get("video", {}).get("metadata", {}).get("topic", "Lecture Summary")
 
-    for i, kf in enumerate(slides):
-        start = kf["time_sec"]
-        end = slides[i+1]["time_sec"] if i + 1 < len(slides) else float("inf")
-
-        speech_text = " ".join(
-            seg["text"]
-            for seg in audio_segments
-            if start <= seg["start_sec"] < end
-        )
-
-        ocr = kf.get("ocr_text", "")
-        caption = kf.get("caption", "")
-
-        print(f"\n➡️ Slide {i+1}: generating JSON…")
-        slide_json = generate_slide_json(client, ocr, speech_text, caption)
-        slide_json["slide_number"] = i + 1
-        result_json.append(slide_json)
-
-        # --- REMOVED ---
-        # The call to generate_slide_png(...) was removed.
-        # print(f"➡️ Slide {i+1}: generating PNG…")
-        # generate_slide_png(client, slide_json, i + 1)
-
-    return {"slides": result_json}
+    return full_text, title
 
 
-# ================================
-# ENTRY POINT
-# ================================
+
+# ------------------------------------------------------
+# Main
+# ------------------------------------------------------
+
 def main():
-    client = create_client()
+    client = create_gemini_client()
     if not client:
-        print("❌ Failed to create OpenRouter client. Check API key.", file=sys.stderr)
-        raise EnvironmentError("Failed to create OpenRouter client.")
+        sys.exit(1)
 
-    if not os.path.exists(Config.INPUT_JSON_PATH):
-        print(f"❌ Error: Input file not found: {Config.INPUT_JSON_PATH}", file=sys.stderr)
-        print("   (Did video_decoder.py fail to run?)", file=sys.stderr)
-        raise FileNotFoundError(f"{Config.INPUT_JSON_PATH} not found.")
+    print("📘 Loading transcript...")
+    full_transcript, course_title = load_full_transcript()
 
-    with open(Config.INPUT_JSON_PATH) as f:
-        data = json.load(f)
+    print("✨ Generating slide plan...")
+    generated_slides = generate_slide_plan(client, full_transcript, course_title)
 
-    output = process_transcript(client, data)
+    with open(OUTPUT_JSON_PATH, "w") as f:
+        json.dump(generated_slides, f, indent=2, ensure_ascii=False)
 
-    with open(Config.OUTPUT_SLIDES_JSON, "w") as f:
-        json.dump(output, f, indent=2, ensure_ascii=False)
-
-    print(f"\n✅ JSON saved → {Config.OUTPUT_SLIDES_JSON}")
-    # --- REMOVED ---
-    # print(f"🖼️ PNG slides saved → {OUTPUT_IMG_DIR}/")
+    print(f"\n✅ DONE → slide plan saved to {OUTPUT_JSON_PATH}\n")
 
 
 if __name__ == "__main__":
-    try:
-        main()
-    except Exception as e:
-        print(f"❌ Fatal error in transcript_condenser: {e}", file=sys.stderr)
-        sys.exit(1)
+    main()

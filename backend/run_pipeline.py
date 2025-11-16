@@ -1,6 +1,7 @@
 import os
 import sys
 from pathlib import Path
+from importlib import reload
 
 # Import your scripts (after we modify them)
 import video_decoder
@@ -41,6 +42,7 @@ def run_pipeline_task(status_file: Path):
         # 4. Generate Audio
         status_file.write_text("generating_audio")
         print("[PIPELINE] Step 4: Generating audio...")
+        reload(audio_generator)  # Force reload to get latest changes
         audio_generator.main()
         
         # 5. Stitch Video

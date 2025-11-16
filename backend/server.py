@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 from fastapi import FastAPI, UploadFile, File, BackgroundTasks
 from fastapi.responses import FileResponse, JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from config import Config # Import your config for paths
 
 # We will create 'run_pipeline.py' to orchestrate your scripts.
@@ -11,6 +12,15 @@ from run_pipeline import run_pipeline_task
 
 # --- Configuration ---
 app = FastAPI(title="Video Processing API")
+
+# Add CORS middleware to allow frontend requests
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:8080", "http://127.0.0.1:8080"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # A central directory for all working files
 # We'll make all scripts read/write from here

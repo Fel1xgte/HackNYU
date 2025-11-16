@@ -1,6 +1,11 @@
 # Core dependencies
 elevenlabs==1.8.0
 
+# FastAPI and server
+fastapi
+uvicorn[standard]
+python-multipart
+
 # Image processing (updated for Python 3.13 compatibility)
 Pillow>=11.0.0
 
@@ -9,3 +14,15 @@ google-generativeai
 
 # Environment variables
 python-dotenv
+
+# AI and NLP
+openai
+torch
+openai-whisper
+
+# Video and audio processing
+opencv-python
+pytesseract
+
+# HTTP requests
+requests

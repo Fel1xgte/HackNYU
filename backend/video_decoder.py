@@ -189,8 +189,13 @@ def extract_keyframes_fixed_interval(
             print(f"[decoder][WARN] OCR failed on {frame_id}: {e}")
             ocr_text = ""
 
-        # You can get fancier later (detect slide vs instructor); for now:
-        kind = "unknown"
+        # Classify frames as slides based on OCR content
+        # If OCR detected substantial text, it's likely a slide
+        if ocr_text and len(ocr_text.strip()) > 20:
+            kind = "slide"
+        else:
+            kind = "unknown"
+        
         caption = ""    # could later be generated from OCR/LLM
         tags: List[str] = []
 

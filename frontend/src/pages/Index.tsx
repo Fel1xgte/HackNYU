@@ -25,7 +25,7 @@ const Index = () => {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    
+
     const files = e.dataTransfer.files;
     if (files.length > 0) {
       const file = files[0];
@@ -65,33 +65,59 @@ const Index = () => {
     }
   };
 
-  const handleUpload = () => {
-    if (selectedFile) {
-      const videoUrl = URL.createObjectURL(selectedFile);
-      navigate("/results", { state: { videoUrl } });
+  const handleUpload = async () => {
+    if (!selectedFile) return;
+
+    try {
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+
+      const response = await fetch("http://127.0.0.1:8000/process-video/", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to upload video");
+      }
+
+      const data = await response.json();
+
+      toast({
+        title: "Upload successful",
+        description: "Your video is being processed...",
+      });
+
+      navigate("/results");
+    } catch (error) {
+      toast({
+        title: "Upload failed",
+        description:
+          error instanceof Error ? error.message : "Please try again",
+        variant: "destructive",
+      });
     }
   };
 
   return (
     <div className="min-h-screen relative overflow-hidden">
       {/* Background */}
-      <div 
+      <div
         className="absolute inset-0 bg-cover bg-center"
-        style={{ 
+        style={{
           backgroundImage: `url(${heroBackground})`,
         }}
       />
       <div className="absolute inset-0 bg-hero-gradient" />
-      
-      
+
       {/* Content */}
       <div className="relative z-10 min-h-screen flex flex-col pt-8 pb-28">
         {/* Logo */}
         <div className="p-8 animate-fade-in">
-          <img 
-            src={confuciusLogo} 
-            alt="Confucius" 
-            className="h-20 w-auto hover:scale-110 transition-transform duration-300 cursor-pointer animate-glow" 
+          <img
+            src={confuciusLogo}
+            alt="Confucius"
+            className="h-20 w-auto hover:scale-110 transition-transform duration-300 cursor-pointer animate-glow"
           />
         </div>
 
@@ -115,11 +141,13 @@ const Index = () => {
                 into simple and clear summaries.
               </p>
               <div className="mt-8 flex gap-4">
-                <div className="h-1 w-24 bg-accent rounded-full animate-shimmer" 
-                     style={{ 
-                       background: 'linear-gradient(90deg, transparent, hsl(var(--accent)), transparent)',
-                       backgroundSize: '200% 100%'
-                     }} 
+                <div
+                  className="h-1 w-24 bg-accent rounded-full animate-shimmer"
+                  style={{
+                    background:
+                      "linear-gradient(90deg, transparent, hsl(var(--accent)), transparent)",
+                    backgroundSize: "200% 100%",
+                  }}
                 />
                 <div className="h-1 w-16 bg-accent/60 rounded-full" />
                 <div className="h-1 w-8 bg-accent/30 rounded-full" />
@@ -130,10 +158,9 @@ const Index = () => {
           {/* Right Side - Upload Card */}
           <div className="flex-1 flex justify-center items-center animate-slide-in-right">
             <div className="relative group">
-              
               {/* Glow effect */}
               <div className="absolute inset-0 bg-accent/20 rounded-3xl blur-2xl group-hover:bg-accent/30 transition-all duration-500" />
-              
+
               <div className="relative bg-card/95 backdrop-blur-sm rounded-3xl p-12 shadow-card w-full max-w-md border-2 border-accent/20 hover:border-accent/40 transition-all duration-300">
                 <div
                   onDragOver={handleDragOver}
@@ -151,7 +178,8 @@ const Index = () => {
                       <div className="absolute inset-0 blur-xl bg-primary/30 animate-pulse" />
                     </div>
                     <h2 className="text-xl font-semibold mb-2">
-                      Drag & Drop <span className="text-primary">MP4 Video</span>
+                      Drag & Drop{" "}
+                      <span className="text-primary">MP4 Video</span>
                     </h2>
                     <p className="text-sm text-muted-foreground mb-4">
                       or{" "}
