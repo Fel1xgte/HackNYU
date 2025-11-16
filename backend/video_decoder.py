@@ -7,17 +7,13 @@ Original file is located at
     https://colab.research.google.com/drive/1CNd8CkV0D9_eiWdr2j_f3i5qoWBq3AzN
 """
 
-pip install -U openai-whisper
-
-!pip install -q git+https://github.com/openai/whisper.git
-!pip install -q opencv-python python-dotenv pytesseract
-!sudo apt-get -y install tesseract-ocr
-
 import os
 import json
 from dataclasses import dataclass, asdict
 from datetime import datetime
-from typing import List, Dict, Any, Optional
+# --- FIX: IMPORT TUPLE, LIST, DICT, ANY, OPTIONAL ---
+from typing import List, Dict, Any, Optional, Tuple 
+# --- END FIX ---
 
 import torch
 import cv2
@@ -141,7 +137,9 @@ def extract_keyframes_fixed_interval(
     output_dir: str,
     interval_sec: float = 10.0,
     ocr_lang: str = "eng"
-) -> (List[VisualKeyframe], float, float, int, int):
+# --- FIX: CHANGED RETURN TYPE SYNTAX ---
+) -> Tuple[List[VisualKeyframe], float, float, int, int]:
+# --- END FIX ---
     """
     Sample frames every `interval_sec` seconds and save as PNG files.
     Also run OCR on each frame and store the text.
@@ -338,6 +336,7 @@ def decode_video_to_json(
     }
 
     # 5. Save JSON
+    # Ensure parent directory exists
     os.makedirs(os.path.dirname(output_json_path), exist_ok=True)
     with open(output_json_path, "w", encoding="utf-8") as f:
         json.dump(video_decode, f, ensure_ascii=False, indent=2)
@@ -345,18 +344,36 @@ def decode_video_to_json(
     print(f"[decoder] Saved JSON to: {os.path.abspath(output_json_path)}")
     print(f"[decoder] Frames directory: {os.path.abspath(frames_output_dir)}")
 
-INPUT_VIDEO = "/content/Test Video.mp4"   # change to your mp4
-PROJECT_ID = "lecture1_eoq_v2"
-OUTPUT_JSON = "/content/artifacts/lecture1_decode_v2.json"
-FRAMES_DIR = "/content/artifacts/frames/lecture1_v2"
 
-decode_video_to_json(
-    video_path=INPUT_VIDEO,
-    project_id=PROJECT_ID,
-    output_json_path=OUTPUT_JSON,
-    frames_output_dir=FRAMES_DIR,
-    interval_sec=10.0,       # now sampling every 10s; bump to 15/20 if you want even fewer
-    language="en",           # or None for auto
-    whisper_model="base",    # "tiny"/"small"/"medium"/"large" if you want
-    ocr_lang="eng"           # change if slides are another language
-)
+# =========================================================
+# SCRIPT EXECUTION
+# =========================================================
+
+def main():
+    """
+    Main function to be called by the pipeline orchestrator.
+    Paths are now relative to the workspace.
+    """
+    # --- PATHS CHANGED FOR API ---
+    INPUT_VIDEO = "workspace/input_video.mp4"
+    PROJECT_ID = "video_project"
+    OUTPUT_JSON = "workspace/decoded_video.json"
+    FRAMES_DIR = "workspace/frames"
+    # --- END OF CHANGES ---
+
+    decode_video_to_json(
+        video_path=INPUT_VIDEO,
+        project_id=PROJECT_ID,
+        output_json_path=OUTPUT_JSON,
+        frames_output_dir=FRAMES_DIR,
+        interval_sec=10.0,
+        language="en",
+        whisper_model="base",
+        ocr_lang="eng"
+    )
+
+if __name__ == "__main__":
+    # This block allows the script to be run directly
+    # e.g., `python video_decoder.py`
+    # It will NOT run when imported by `run_pipeline.py`
+    main()
