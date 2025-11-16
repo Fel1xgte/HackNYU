@@ -85,7 +85,7 @@ const Index = () => {
       
       
       {/* Content */}
-      <div className="relative z-10 min-h-screen flex flex-col">
+      <div className="relative z-10 min-h-screen flex flex-col pt-8 pb-28">
         {/* Logo */}
         <div className="p-8 animate-fade-in">
           <img 
