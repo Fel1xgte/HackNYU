@@ -483,7 +483,7 @@ def generate_answer_with_gemini(
                 
                 prompt = f"""You are a helpful educational tutor helping a student understand lecture material.
 
-Answer the student's question using the lecture transcript context below. Keep your answer under 150 words and use simple language.
+Answer the student's question using the lecture transcript context below. Condense and explain the information concisely within 160 words maximum.
 
 Question: {safe_question}
 
@@ -493,8 +493,10 @@ Lecture Context:
 Instructions:
 - Answer based on the transcript if relevant
 - Use simple, everyday language
-- Maximum 150 words
+- Maximum 160 words - condense information to fit this limit
+- Provide a complete, coherent answer that doesn't cut off mid-sentence
 - Be helpful and educational
+- Summarize key points concisely
 
 Answer:"""
             else:
@@ -506,48 +508,51 @@ Answer:"""
 Question: {safe_question}
 
 Instructions:
-- Provide a clear educational answer
+- Provide a clear, complete educational answer
 - Use simple, everyday language
-- Maximum 150 words
+- Maximum 160 words - condense information to fit this limit
+- Provide a complete, coherent answer that doesn't cut off mid-sentence
 - Be helpful and informative
+- Summarize key points concisely
 
 Answer:"""
             
-            # Configure safety settings to be less restrictive for educational content
-            # Using proper enum values from genai.types
+            # Configure safety settings to be permissive for educational content
+            # Disable safety filters for educational Q&A - questions are about lecture content only
+            # Input is already sanitized, so safety filters are unnecessary and cause false positives
             try:
                 from google.generativeai.types import HarmCategory, HarmBlockThreshold
                 safety_settings = [
                     {
                         "category": HarmCategory.HARM_CATEGORY_HARASSMENT,
-                        "threshold": HarmBlockThreshold.BLOCK_ONLY_HIGH
+                        "threshold": HarmBlockThreshold.BLOCK_NONE
                     },
                     {
                         "category": HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-                        "threshold": HarmBlockThreshold.BLOCK_ONLY_HIGH
+                        "threshold": HarmBlockThreshold.BLOCK_NONE
                     },
                     {
                         "category": HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
-                        "threshold": HarmBlockThreshold.BLOCK_ONLY_HIGH
+                        "threshold": HarmBlockThreshold.BLOCK_NONE
                     },
                     {
                         "category": HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
-                        "threshold": HarmBlockThreshold.BLOCK_ONLY_HIGH
+                        "threshold": HarmBlockThreshold.BLOCK_NONE
                     },
                 ]
             except (ImportError, AttributeError):
                 # Fallback to string format if enums not available
                 safety_settings = [
-                    {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_ONLY_HIGH"},
-                    {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_ONLY_HIGH"},
-                    {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_ONLY_HIGH"},
-                    {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_ONLY_HIGH"},
+                    {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
+                    {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
+                    {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
+                    {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
                 ]
             
             response = model.generate_content(
                 prompt,
                 generation_config={
-                    "max_output_tokens": 200,  # ~200 tokens ≈ 150 words (enforces word limit)
+                    "max_output_tokens": 800,  # ~800 tokens ≈ 600 words (allows complete explanations)
                     "temperature": 0.7,  # Slightly lower for more focused, concise responses
                 },
                 safety_settings=safety_settings
@@ -641,7 +646,7 @@ Provide a helpful, educational answer (2-3 sentences) now:"""
                     retry_response = model.generate_content(
                         retry_prompt,
                         generation_config={
-                            "max_output_tokens": 500,
+                            "max_output_tokens": 800,  # Match main generation limit for complete answers
                             "temperature": 0.8,
                         }
                     )
