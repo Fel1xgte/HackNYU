@@ -13,11 +13,15 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional
-from config import Config # Import your config for paths
-
-# Load environment variables from .env file
+# Load environment variables from .env file FIRST
 from env_loader import load_env_file
 load_env_file()
+
+# Import Config AFTER .env is loaded
+from config import Config
+
+# Reload Config environment variables to ensure .env values are picked up
+Config.reload_env_vars()
 
 # We will create 'run_pipeline.py' to orchestrate your scripts.
 from run_pipeline import run_pipeline_task

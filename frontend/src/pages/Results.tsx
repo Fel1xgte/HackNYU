@@ -490,12 +490,8 @@ const Results = () => {
           setWidgetState("idle");
           audioRef.current = null;
           isProcessingRef.current = false;
-          // Resume video if paused
-          if (videoRef.current && videoRef.current.paused) {
-            videoRef.current.play().catch(err => {
-              console.warn("Failed to resume video:", err);
-            });
-          }
+          // DO NOT resume video - chat is still open, user can choose to watch or chat
+          // Video will only play when chat is completely closed (idle + no messages)
         };
 
         audio.onerror = err => {
@@ -539,10 +535,31 @@ const Results = () => {
     setChatMessages(prev => prev.filter(msg => msg.id !== id));
   };
 
-  // Toggle play/pause
+  // Track if chat window is open (full window, not collapsed badge)
+  const [isChatWindowOpen, setIsChatWindowOpen] = useState(false);
+
+  // Pause video when chat window is open - user can either chat OR watch video, not both
+  useEffect(() => {
+    if (isChatWindowOpen && videoRef.current && !videoRef.current.paused) {
+      videoRef.current.pause();
+      setIsPlaying(false);
+    }
+  }, [isChatWindowOpen]);
+
+  const handleChatStateChange = (isOpen: boolean) => {
+    setIsChatWindowOpen(isOpen);
+  };
+
+  // Toggle play/pause - but prevent playing if chat is open
   const togglePlayPause = () => {
     const video = videoRef.current;
     if (!video) return;
+
+    // Don't allow video to play if chat window is open
+    if (isChatWindowOpen) {
+      console.log("Cannot play video while chat is open. Close chat first.");
+      return;
+    }
 
     if (video.paused) {
       video.play().catch(err => {
@@ -793,9 +810,25 @@ const Results = () => {
                         }}
                         onPlaying={() => {
                           setVideoLoading(false);
-                          setIsPlaying(true);
+                          // Only set playing if chat window is not open
+                          if (!isChatWindowOpen) {
+                            setIsPlaying(true);
+                          } else {
+                            // Chat window is open, pause video immediately
+                            if (videoRef.current) {
+                              videoRef.current.pause();
+                            }
+                          }
                         }}
                         onPlay={() => {
+                          // Prevent video from playing if chat window is open
+                          if (isChatWindowOpen) {
+                            if (videoRef.current) {
+                              videoRef.current.pause();
+                            }
+                            setIsPlaying(false);
+                            return;
+                          }
                           setIsPlaying(true);
                         }}
                         onPause={() => {
@@ -893,6 +926,7 @@ const Results = () => {
               widgetState={widgetState}
               isVideoPlaying={isPlaying}
               liveTranscript={liveTranscript}
+              onChatStateChange={handleChatStateChange}
             />
           )}
 

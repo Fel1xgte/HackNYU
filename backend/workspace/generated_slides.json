@@ -2,63 +2,63 @@
   "course_title": "IC Design Process: Beginner's Overview to VLSI",
   "slides": [
     {
-      "title": "IC Design: Connecting Code to Silicon",
+      "title": "IC Design: A Beginner's Overview",
       "points": [
-        "Bridge HDL code to physical circuits",
-        "Overview of VLSI design process",
-        "Focus on theory, not coding"
+        "Bridging HDL code to silicon circuits",
+        "Covers RTL, verification, synthesis, physical design",
+        "Focuses on theory, not coding"
       ],
-      "speaker_notes": "This course simplifies the journey from your HDL code to actual silicon. We'll connect the dots across the entire VLSI design process: from RTL to verification, synthesis, and physical design. Our focus is a theoretical overview, not specific coding."
+      "speaker_notes": "Welcome! This course simplifies IC design by connecting your HDL code to the actual silicon circuit. We'll explore the entire process, from RTL design through manufacturing, focusing on theory rather than specific coding. Our goal is to demystify how digital logic becomes a physical chip."
     },
     {
-      "title": "Understanding ICs & SOCs",
+      "title": "What are ICs & SOCs?",
       "points": [
-        "IC: numerous circuits on tiny silicon",
-        "SOC: entire system on one chip",
-        "Can contain billions of transistors",
-        "Focus on digital IC design"
+        "IC: Electronic circuits on a tiny silicon plate",
+        "SOC: A complete system on a single IC",
+        "From vacuum tubes to discrete transistors",
+        "Evolution towards integrated circuits"
       ],
-      "speaker_notes": "An IC packs electronic circuits onto a tiny silicon plate. An SOC integrates a complete system onto one chip, often with billions of transistors. ICs can be analog or digital; we focus on digital designs for this course."
+      "speaker_notes": "An Integrated Circuit, or IC, packs numerous electronic circuits onto a tiny silicon plate. A System-on-Chip, or SOC, takes this further by integrating an entire electronic system onto one IC. We've evolved from bulky vacuum tubes to discrete transistors, ultimately leading to the revolutionary idea of integrating all components onto a single silicon piece."
     },
     {
-      "title": "Evolution of IC Technology",
+      "title": "The Rise of VLSI",
       "points": [
-        "From vacuum tubes to transistors (1947)",
-        "Integrated Circuit concept emerged",
-        "Evolved through SSI, MSI, LSI",
-        "VLSI: current high-density standard"
+        "Early ICs: few components (SSI)",
+        "Integration scaled from SSI to LSI",
+        "VLSI: Millions to billions of transistors",
+        "Modern ICs defined by Very Large Scale Integration"
       ],
-      "speaker_notes": "Circuits moved from vacuum tubes to transistors in 1947, sparking the Integrated Circuit concept. This evolved through SSI, MSI, and LSI. Now, VLSI, or Very Large-Scale Integration, is the standard for all high-density chips, housing billions of transistors."
+      "speaker_notes": "Early ICs housed only a handful of components, known as Small-Scale Integration. This quickly scaled through Medium and Large-Scale Integration, packing thousands of transistors. Today, VLSI, or Very Large-Scale Integration, defines all modern ICs, capable of integrating millions, even billions, of transistors onto a single chip."
     },
     {
-      "title": "Digital Circuit Building Blocks",
+      "title": "Digital Circuit Fundamentals",
       "points": [
-        "Binary data with on/off switches",
+        "Digital data represented by binary (voltage on/off)",
+        "Transistors act as fundamental switches",
         "Combinational vs. Sequential circuits",
-        "Logic gates are core components",
-        "Flip-flops provide memory"
+        "Memory elements define sequential circuits"
       ],
-      "speaker_notes": "Digital circuits process binary data using transistors as on/off switches. We have combinational circuits, dependent only on current inputs, and sequential circuits, which use memory for past inputs. Key building blocks are logic gates and flip-flops, which store single bits of data."
+      "speaker_notes": "Digital circuits represent real-world data as binary, where voltage states signify ones and zeros. The core building blocks are switches, typically transistors, controlling these voltage states. Circuits are either combinational, reacting only to current inputs, or sequential, relying on past inputs due to memory elements."
     },
     {
-      "title": "The Transistor Foundation",
+      "title": "Logic Gates and Flip-Flops",
       "points": [
-        "Flip-flops built from logic gates",
-        "Logic gates made from transistors (CMOS)",
-        "Every digital circuit is a transistor network",
-        "Modern ICs house billions of transistors"
+        "All digital circuits break down to logic gates and flip-flops",
+        "Seven fundamental logic gates (AND, OR, NOT, etc.)",
+        "Flip-flops: memory storage elements for single bits",
+        "Ultimately, all gates and flip-flops are made of transistors"
       ],
-      "speaker_notes": "Flip-flops are built from logic gates, and all logic gates are made from transistors – typically CMOS. Thus, every digital circuit, no matter its complexity, is ultimately a vast network of transistors. Modern ICs integrate billions of these fundamental switches."
+      "speaker_notes": "At their core, digital circuits are built from logic gates and flip-flops. Logic gates perform fundamental Boolean operations, while flip-flops are essential memory elements, storing a single bit. Crucially, every single one of these components, from complex flip-flops to simple gates, is ultimately constructed from basic transistors."
     },
     {
-      "title": "Why We Use HDLs",
+      "title": "Abstracting Design with HDLs",
       "points": [
-        "Direct transistor design is impractical",
-        "HDLs provide abstraction",
-        "Model circuits at a higher level",
-        "Simplify complex IC design"
+        "Digital circuits are vast networks of transistors",
+        "Direct transistor-level design is impractical",
+        "HDLs model complex circuits abstractly",
+        "HDLs hide low-level transistor details"
       ],
-      "speaker_notes": "Directly designing complex, transistor-level circuits is impractical. Hardware Description Languages, or HDLs, are essential. They allow us to model and design digital circuits at a higher, abstract level. This hides the overwhelming transistor details, simplifying the entire IC design process."
+      "speaker_notes": "Despite their complexity, all digital circuits are fundamentally just massive collections of transistors. Designing at this low transistor level is incredibly complex and inefficient. Hardware Description Languages, or HDLs, solve this by allowing us to model circuits abstractly, hiding the intricate transistor details and simplifying the design process significantly."
     }
   ]
 }

@@ -26,8 +26,11 @@ import google.generativeai as genai
 from config import Config
 from env_loader import load_env_file
 
-# Ensure .env is loaded
+# Ensure .env is loaded BEFORE importing Config (but Config already loads it)
 load_env_file()
+
+# Reload Config environment variables to ensure .env values are picked up
+Config.reload_env_vars()
 
 # Answer cache with size limits (LRU eviction)
 # Thread-safe cache using OrderedDict with max size
@@ -341,28 +344,58 @@ def generate_fallback_answer(
     answer_parts = []
     evidence = []
     
-    # Extract key information from top segments
-    for i, segment in enumerate(relevant_segments[:3]):
+    # Filter out generic greeting/intro segments
+    greeting_keywords = [
+        "welcome", "hello", "hi", "introduction", "overview", 
+        "this course", "today we", "in this lecture"
+    ]
+    
+    # Extract key information from top segments, skipping generic greetings
+    for i, segment in enumerate(relevant_segments[:5]):  # Check more segments
         if not isinstance(segment, dict):
             continue
         
         text = segment.get("text", "").strip()
-        if text:
-            evidence.append(text)
-            if i == 0:  # Use first segment as primary answer
-                # Try to extract a concise answer
-                sentences = re.split(r'[.!?]+', text)
-                if sentences:
-                    # Use first meaningful sentence
-                    first_sentence = sentences[0].strip()
-                    if first_sentence:
-                        answer_parts.append(first_sentence)
+        if not text:
+            continue
+        
+        # Skip generic greeting segments
+        text_lower = text.lower()
+        is_greeting = any(keyword in text_lower for keyword in greeting_keywords)
+        
+        # Skip if it's a greeting and we have other segments
+        if is_greeting and len(relevant_segments) > 1:
+            continue
+        
+        evidence.append(text)
+        
+        # Use first non-greeting segment as primary answer, or first segment if all are greetings
+        # Only add to answer_parts if we haven't found a good answer yet
+        if len(answer_parts) == 0:
+            # Try to extract a concise answer
+            sentences = re.split(r'[.!?]+', text)
+            meaningful_sentences = [s.strip() for s in sentences if s.strip() and len(s.strip()) > 10]
+            
+            if meaningful_sentences:
+                # Use first meaningful sentence, or combine first 2 if short
+                if len(meaningful_sentences[0]) < 30 and len(meaningful_sentences) > 1:
+                    answer_parts.append(f"{meaningful_sentences[0]} {meaningful_sentences[1]}")
+                else:
+                    answer_parts.append(meaningful_sentences[0])
     
     if answer_parts:
         answer = answer_parts[0]
+        # Ensure answer is meaningful and not just a greeting
         if len(answer) < 20:
-            # If too short, add more context
-            answer = f"Based on the lecture, {answer.lower()}"
+            # If too short, try to get more context from other segments
+            if len(relevant_segments) > 1:
+                for seg in relevant_segments[1:]:
+                    seg_text = seg.get("text", "").strip()
+                    if seg_text and len(seg_text) > 20:
+                        answer = seg_text[:150]  # Use first 150 chars
+                        break
+            if len(answer) < 20:
+                answer = f"Based on the lecture, {answer.lower()}"
     else:
         answer = (
             "I found relevant information in the lecture about this topic. "
@@ -410,6 +443,8 @@ def generate_answer_with_gemini(
         print("   To enable AI-powered answers, set GEMINI_API_KEY in your .env file:")
         print("   Example: GEMINI_API_KEY=your-api-key-here")
         print("   Get your key at: https://makersuite.google.com/app/apikey")
+        print(f"   Question: {question[:100]}")
+        print(f"   Relevant segments: {len(relevant_segments)}")
         # Use fallback instead of failing
         return generate_fallback_answer(question, relevant_segments, full_transcript)
     
@@ -446,65 +481,135 @@ def generate_answer_with_gemini(
                 safe_question = question.replace('"""', '').replace("'''", "")
                 safe_context = context_text.replace('"""', '').replace("'''", "")
                 
-                prompt = f"""You are Confucius, a wise and helpful AI tutor assisting a student with their lecture material.
+                prompt = f"""You are a helpful educational tutor helping a student understand lecture material.
 
-STUDENT'S QUESTION: {safe_question}
+Answer the student's question using the lecture transcript context below. Keep your answer under 150 words and use simple language.
 
-LECTURE TRANSCRIPT CONTEXT:
+Question: {safe_question}
+
+Lecture Context:
 {safe_context}
 
-INSTRUCTIONS:
-1. Carefully read the lecture transcript context provided above
-2. Search for relevant information related to the student's question
-3. If the transcript contains relevant information:
-   - Provide a detailed, clear answer based on the transcript (3-4 sentences)
-   - Use specific details, examples, or concepts from the lecture
-   - Quote or reference relevant parts when helpful
-4. If the transcript does NOT contain relevant information:
-   - Use your extensive knowledge to provide an educational answer (3-4 sentences)
-   - Be helpful and informative, drawing from academic knowledge
-5. ALWAYS provide a substantive answer - never refuse or say you cannot answer
-6. Be conversational, warm, educational, and encouraging
-7. If clarification would help, acknowledge what's in the lecture and what requires additional knowledge
+Instructions:
+- Answer based on the transcript if relevant
+- Use simple, everyday language
+- Maximum 150 words
+- Be helpful and educational
 
-Your goal: Help the student understand the material thoroughly. Provide thoughtful, detailed answers that aid learning.
-
-Provide your answer now:"""
+Answer:"""
             else:
                 # No transcript context - use general knowledge
                 safe_question = question.replace('"""', '').replace("'''", "")
                 
-                prompt = f"""You are Confucius, a wise and helpful AI tutor assisting a student.
+                prompt = f"""You are a helpful educational tutor. Answer the student's question clearly and simply.
 
-STUDENT'S QUESTION: {safe_question}
+Question: {safe_question}
 
-INSTRUCTIONS:
-1. Provide a detailed, clear, educational answer (3-4 sentences)
-2. Use your extensive academic knowledge and understanding
-3. Include specific examples, explanations, or context when relevant
-4. Be conversational, warm, and encouraging
-5. ALWAYS provide a substantive answer - never refuse to answer
-6. Focus on helping the student understand the concept thoroughly
+Instructions:
+- Provide a clear educational answer
+- Use simple, everyday language
+- Maximum 150 words
+- Be helpful and informative
 
-Your goal: Provide a thoughtful, educational response that aids student learning.
-
-Provide your answer now:"""
+Answer:"""
+            
+            # Configure safety settings to be less restrictive for educational content
+            # Using proper enum values from genai.types
+            try:
+                from google.generativeai.types import HarmCategory, HarmBlockThreshold
+                safety_settings = [
+                    {
+                        "category": HarmCategory.HARM_CATEGORY_HARASSMENT,
+                        "threshold": HarmBlockThreshold.BLOCK_ONLY_HIGH
+                    },
+                    {
+                        "category": HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+                        "threshold": HarmBlockThreshold.BLOCK_ONLY_HIGH
+                    },
+                    {
+                        "category": HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+                        "threshold": HarmBlockThreshold.BLOCK_ONLY_HIGH
+                    },
+                    {
+                        "category": HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+                        "threshold": HarmBlockThreshold.BLOCK_ONLY_HIGH
+                    },
+                ]
+            except (ImportError, AttributeError):
+                # Fallback to string format if enums not available
+                safety_settings = [
+                    {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_ONLY_HIGH"},
+                    {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_ONLY_HIGH"},
+                    {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_ONLY_HIGH"},
+                    {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_ONLY_HIGH"},
+                ]
             
             response = model.generate_content(
                 prompt,
                 generation_config={
-                    "max_output_tokens": 800,
-                    "temperature": 0.8,
-                }
+                    "max_output_tokens": 200,  # ~200 tokens ≈ 150 words (enforces word limit)
+                    "temperature": 0.7,  # Slightly lower for more focused, concise responses
+                },
+                safety_settings=safety_settings
             )
             
             if not response:
                 raise ValueError("Empty response object from Gemini")
             
-            if not hasattr(response, 'text') or not response.text:
-                raise ValueError("Empty response text from Gemini")
+            # Try to get text from response FIRST, before checking finish_reason
+            # Sometimes there's partial content even if blocked
+            answer_text = None
+            finish_reason = None
             
-            answer_text = response.text.strip()
+            try:
+                answer_text = response.text.strip()
+            except Exception as text_error:
+                # If response.text fails, try accessing candidates directly
+                if hasattr(response, 'candidates') and response.candidates:
+                    candidate = response.candidates[0]
+                    if hasattr(candidate, 'finish_reason'):
+                        finish_reason = candidate.finish_reason
+                    
+                    if hasattr(candidate, 'content') and hasattr(candidate.content, 'parts'):
+                        parts = candidate.content.parts
+                        if parts and hasattr(parts[0], 'text'):
+                            answer_text = parts[0].text.strip()
+                        else:
+                            # No text available
+                            answer_text = None
+                    else:
+                        answer_text = None
+                else:
+                    answer_text = None
+            
+            # Check finish_reason if we couldn't get text
+            if not answer_text and hasattr(response, 'candidates') and response.candidates:
+                candidate = response.candidates[0]
+                if hasattr(candidate, 'finish_reason'):
+                    finish_reason = candidate.finish_reason
+                    print(f"⚠️  Response finish_reason: {finish_reason}")
+                    
+                    # Check for safety ratings to understand why it was blocked
+                    if hasattr(candidate, 'safety_ratings'):
+                        print(f"⚠️  Safety ratings: {candidate.safety_ratings}")
+                    
+                    if finish_reason == 2:  # SAFETY block
+                        print(f"⚠️  Response blocked by safety filters. Question: {question[:100]}")
+                        print(f"⚠️  Prompt length: {len(prompt)} chars")
+                        # Try to get any partial content that might exist
+                        if hasattr(candidate, 'content') and hasattr(candidate.content, 'parts'):
+                            parts = candidate.content.parts
+                            if parts:
+                                print(f"⚠️  Found {len(parts)} content parts despite safety block")
+                        # Don't retry - safety blocks usually persist
+                        raise ValueError("Response was blocked by safety filters. Using fallback answer.")
+                    elif finish_reason == 3:  # RECITATION
+                        print(f"⚠️  Response matched training data. Question: {question[:100]}")
+                        raise ValueError("Response matched training data. Using fallback answer.")
+            
+            # If we still don't have text, raise error
+            if not answer_text:
+                raise ValueError("No text content in response")
             
             # Validate answer text
             if len(answer_text) < 10:
@@ -562,8 +667,8 @@ Provide a helpful, educational answer (2-3 sentences) now:"""
             last_error = api_error
             error_msg = str(api_error).lower()
             
-            # Don't retry on certain errors (quota, billing, invalid key)
-            if any(keyword in error_msg for keyword in ["quota", "billing", "invalid", "permission", "forbidden"]):
+            # Don't retry on certain errors (quota, billing, invalid key, safety filters)
+            if any(keyword in error_msg for keyword in ["quota", "billing", "invalid", "permission", "forbidden", "safety filters", "safety"]):
                 print(f"⚠️  Gemini API error (non-retryable): {api_error}")
                 break
             
@@ -578,6 +683,10 @@ Provide a helpful, educational answer (2-3 sentences) now:"""
     
     # All retries failed, use fallback
     print(f"⚠️  Falling back to keyword-based answer after {max_retries} failed attempts")
+    print(f"   Question: {question[:100]}")
+    print(f"   Relevant segments found: {len(relevant_segments)}")
+    if relevant_segments:
+        print(f"   First segment text: {relevant_segments[0].get('text', '')[:100]}")
     return generate_fallback_answer(question, relevant_segments, full_transcript)
 
 
@@ -717,7 +826,14 @@ def answer_question(
             
             # Validate answer
             if not answer_text or not isinstance(answer_text, str):
-                answer_text = "I apologize, but I couldn't generate a proper answer. Please try again."
+                print(f"⚠️  Empty answer from Gemini, using fallback")
+                raise ValueError("Empty answer from Gemini")
+            
+            # Check if answer is just a greeting (log warning but use it)
+            answer_lower = answer_text.lower()
+            greeting_phrases = ["welcome to this course", "welcome to", "this course"]
+            if any(phrase in answer_lower[:50] for phrase in greeting_phrases) and len(relevant_segments) > 1:
+                print(f"⚠️  Warning: Answer appears to be generic greeting")
             
             if not evidence or not isinstance(evidence, list):
                 evidence = []

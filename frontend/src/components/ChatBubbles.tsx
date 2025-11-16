@@ -19,6 +19,7 @@ interface ChatBubblesProps {
   widgetState?: "idle" | "listening" | "processing" | "answering";
   isVideoPlaying?: boolean;
   liveTranscript?: string;
+  onChatStateChange?: (isOpen: boolean) => void; // Notify parent when chat opens/closes
 }
 
 export function ChatBubbles({
@@ -27,32 +28,133 @@ export function ChatBubbles({
   widgetState = "idle",
   isVideoPlaying = false,
   liveTranscript = "",
+  onChatStateChange,
 }: ChatBubblesProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const isUserScrollingRef = useRef(false); // Track if user is actively scrolling
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Auto-scroll to bottom when new messages arrive or when speaking/processing
+  // Auto-expand chat bubbles when user is speaking or AI is interacting
   useEffect(() => {
-    // Force auto-scroll when processing or answering (user just spoke)
-    if (widgetState === "processing" || widgetState === "answering") {
-      setShouldAutoScroll(true);
+    if (
+      widgetState === "listening" ||
+      widgetState === "processing" ||
+      widgetState === "answering"
+    ) {
+      setIsCollapsed(false);
+    }
+  }, [widgetState]);
+
+  // Notify parent when chat open/closed state changes
+  useEffect(() => {
+    if (onChatStateChange) {
+      // Chat window is "open" (full window visible, not collapsed badge) when:
+      // - Not collapsed AND chat is visible (has messages OR active interaction)
+      // When collapsed (showing badge), chat is "closed" - video can play
+      // When expanded (full window), chat is "open" - video must pause
+      const isChatVisible = widgetState !== "idle" || messages.length > 0;
+      const isOpen = !isCollapsed && isChatVisible;
+      onChatStateChange(isOpen);
+    }
+  }, [isCollapsed, messages.length, widgetState, onChatStateChange]);
+
+  // Auto-scroll to bottom when new messages arrive (only if auto-scroll is enabled)
+  useEffect(() => {
+    // Don't auto-scroll if user is actively scrolling
+    if (!shouldAutoScroll || isUserScrollingRef.current) {
+      return;
     }
 
-    if (shouldAutoScroll && scrollRef.current) {
+    if (scrollRef.current) {
       const scrollContainer = scrollRef.current.querySelector(
         "[data-radix-scroll-area-viewport]"
-      );
+      ) as HTMLElement;
       if (scrollContainer) {
-        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+        // Use instant scroll for new messages (smooth can fight with user input)
+        // Only use smooth when agent starts speaking/thinking
+        const isNewMessage = messages.length > 0;
+        scrollContainer.scrollTo({
+          top: scrollContainer.scrollHeight,
+          behavior: isNewMessage ? "instant" : "smooth",
+        });
       }
     }
-  }, [messages, shouldAutoScroll, widgetState]);
+  }, [messages.length, shouldAutoScroll]); // Only depend on message count, not full messages array
 
-  // Click outside to collapse
+  // Auto-scroll to user's live transcript when they're speaking
+  useEffect(() => {
+    // When user is speaking (listening state), always scroll to show their words
+    if (widgetState === "listening" && liveTranscript) {
+      // Small delay to ensure DOM is updated
+      const timeoutId = setTimeout(() => {
+        if (scrollRef.current) {
+          const scrollContainer = scrollRef.current.querySelector(
+            "[data-radix-scroll-area-viewport]"
+          ) as HTMLElement;
+          if (scrollContainer) {
+            // Smooth scroll to bottom to show user's live transcript
+            scrollContainer.scrollTo({
+              top: scrollContainer.scrollHeight,
+              behavior: "smooth",
+            });
+            // Re-enable auto-scroll when user is speaking (they want to see their words)
+            setShouldAutoScroll(true);
+          }
+        }
+      }, 50);
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [liveTranscript, widgetState]); // Scroll when live transcript updates
+
+  // Re-enable auto-scroll when agent starts speaking/thinking (but respect user scroll)
+  useEffect(() => {
+    // When agent starts processing or answering, check if user is near bottom
+    // If yes, enable auto-scroll; if no, keep it disabled
+    if (widgetState === "processing" || widgetState === "answering") {
+      // Small delay to ensure DOM is ready
+      const checkScroll = setTimeout(() => {
+        if (scrollRef.current) {
+          const scrollContainer = scrollRef.current.querySelector(
+            "[data-radix-scroll-area-viewport]"
+          ) as HTMLElement;
+          if (scrollContainer) {
+            const isNearBottom =
+              scrollContainer.scrollHeight -
+                scrollContainer.scrollTop -
+                scrollContainer.clientHeight <=
+              100; // 100px threshold
+            if (isNearBottom) {
+              setShouldAutoScroll(true);
+              // Smooth scroll to bottom when agent starts responding
+              scrollContainer.scrollTo({
+                top: scrollContainer.scrollHeight,
+                behavior: "smooth",
+              });
+            }
+          }
+        }
+      }, 50);
+
+      return () => clearTimeout(checkScroll);
+    }
+  }, [widgetState]);
+
+  // Click outside to collapse (but NOT during active interactions)
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      // Don't collapse during active interactions
+      if (
+        widgetState === "listening" ||
+        widgetState === "processing" ||
+        widgetState === "answering"
+      ) {
+        return;
+      }
+
       if (
         containerRef.current &&
         !containerRef.current.contains(event.target as Node) &&
@@ -67,32 +169,128 @@ export function ChatBubbles({
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [messages.length, isCollapsed]);
+  }, [messages.length, isCollapsed, widgetState]);
 
-  // Detect user scroll to pause auto-scroll
+  // Attach scroll listener to detect user manual scrolling (single source of truth)
+  useEffect(() => {
+    if (!scrollRef.current) return;
+
+    const scrollContainer = scrollRef.current.querySelector(
+      "[data-radix-scroll-area-viewport]"
+    ) as HTMLElement;
+
+    if (!scrollContainer) {
+      // Retry after a short delay if container not ready
+      const timeoutId = setTimeout(() => {
+        // Re-run effect by checking again
+        if (scrollRef.current) {
+          const retryContainer = scrollRef.current.querySelector(
+            "[data-radix-scroll-area-viewport]"
+          ) as HTMLElement;
+          if (retryContainer) {
+            // Container is now available, but we'll let the effect re-run naturally
+            // This is a fallback - the main logic handles it
+          }
+        }
+      }, 100);
+      return () => clearTimeout(timeoutId);
+    }
+
+    const handleScrollEvent = () => {
+      // Mark that user is actively scrolling
+      isUserScrollingRef.current = true;
+
+      // Clear any existing timeout
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+
+      // After user stops scrolling for 150ms, check position
+      scrollTimeoutRef.current = setTimeout(() => {
+        isUserScrollingRef.current = false;
+
+        const isAtBottom =
+          scrollContainer.scrollHeight -
+            scrollContainer.scrollTop -
+            scrollContainer.clientHeight <=
+          50; // 50px threshold for "at bottom"
+
+        // Update auto-scroll state based on scroll position
+        // If user scrolls up, disable auto-scroll
+        // If user scrolls back to bottom, re-enable auto-scroll
+        setShouldAutoScroll(isAtBottom);
+      }, 150);
+    };
+
+    scrollContainer.addEventListener("scroll", handleScrollEvent, {
+      passive: true,
+    });
+    scrollContainer.addEventListener("wheel", handleScrollEvent, {
+      passive: true,
+    });
+
+    return () => {
+      scrollContainer.removeEventListener("scroll", handleScrollEvent);
+      scrollContainer.removeEventListener("wheel", handleScrollEvent);
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, [messages.length]); // Re-attach when messages change (container might re-render)
+
+  // Initial scroll to bottom when chat opens with messages or expands from collapsed
+  useEffect(() => {
+    if (messages.length > 0 && !isCollapsed && scrollRef.current) {
+      // Small delay to ensure DOM is ready
+      const timeoutId = setTimeout(() => {
+        const scrollContainer = scrollRef.current?.querySelector(
+          "[data-radix-scroll-area-viewport]"
+        ) as HTMLElement;
+        if (scrollContainer) {
+          // Instant scroll to bottom on initial load or when expanding
+          scrollContainer.scrollTop = scrollContainer.scrollHeight;
+          setShouldAutoScroll(true); // Re-enable auto-scroll when expanding
+        }
+      }, 50);
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [isCollapsed, messages.length]); // Run when collapsed state changes or messages load
+
+  // Handle scroll capture (fallback for React synthetic events)
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const target = e.target as HTMLDivElement;
-    const isAtBottom =
-      target.scrollHeight - target.scrollTop <= target.clientHeight + 50;
-    setShouldAutoScroll(isAtBottom);
+    // This is handled by the useEffect scroll listener above
+    // Keeping as fallback but it should rarely be needed
   };
 
-  // Hide chat when video is playing
-  if (isVideoPlaying) {
+  // Keep chat visible during ALL interactions (listening, processing, answering)
+  // Only hide when idle AND video playing AND no messages
+  const shouldShowChat =
+    widgetState !== "idle" || messages.length > 0 || !isVideoPlaying;
+
+  if (!shouldShowChat) {
     return null;
   }
 
-  // Show collapsed badge when messages exist and collapsed
-  if (isCollapsed && messages.length > 0) {
+  // Show collapsed badge when messages exist and collapsed (but NOT during interactions)
+  if (
+    isCollapsed &&
+    messages.length > 0 &&
+    widgetState === "idle" // Only show collapsed badge when idle
+  ) {
     return (
-      <div className="fixed bottom-24 md:bottom-32 left-4 md:left-8 z-40 animate-fade-in">
+      <div
+        className="fixed bottom-24 md:bottom-28 right-4 md:right-6 z-40 animate-fade-in"
+        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+      >
         <button
           onClick={() => setIsCollapsed(false)}
-          className="bg-gradient-to-br from-gray-900/98 via-gray-800/98 to-gray-900/98 backdrop-blur-xl rounded-full shadow-2xl border-2 border-accent/40 px-4 py-2 flex items-center gap-2 hover:scale-105 transition-all duration-200 hover:border-accent/60"
+          className="bg-gradient-to-br from-gray-900/98 via-gray-800/98 to-gray-900/98 backdrop-blur-xl rounded-full shadow-2xl border-2 border-accent/40 px-3 py-2 flex items-center gap-1.5 hover:scale-105 transition-all duration-200 hover:border-accent/60"
+          aria-label={`Open chat with ${messages.length} messages`}
         >
           <MessageCircle className="w-4 h-4 text-accent" />
-          <span className="text-sm font-medium text-white">
-            {messages.length} {messages.length === 1 ? "message" : "messages"}
+          <span className="text-sm font-semibold text-white tabular-nums">
+            {messages.length}
           </span>
         </button>
       </div>
@@ -215,9 +413,7 @@ function StateIndicator({ state }: { state: string }) {
   }
 
   return (
-    <span className="text-xs text-foreground/50 font-medium text-white/40">
-      Ready to help
-    </span>
+    <span className="text-xs font-medium text-white/40">Ready to help</span>
   );
 }
 

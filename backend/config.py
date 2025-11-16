@@ -20,6 +20,15 @@ Usage:
 import os
 from pathlib import Path
 
+# IMPORTANT: Load .env file BEFORE reading environment variables
+# This ensures API keys from .env are available when Config class is defined
+try:
+    from env_loader import load_env_file
+    load_env_file()  # Load .env file before Config class reads env vars
+except ImportError:
+    # If env_loader is not available, continue without it
+    pass
+
 class Config:
     """
     Centralized configuration class for the Confucius Lecture Summarizer.
@@ -62,9 +71,36 @@ class Config:
     # ============================================
     # API Configuration
     # ============================================
+    # Use properties to ensure .env is loaded and values are read dynamically
+    @classmethod
+    def _get_env(cls, key: str, default: str = "") -> str:
+        """Get environment variable, ensuring .env is loaded first."""
+        # Ensure .env is loaded (in case it wasn't loaded during import)
+        try:
+            from env_loader import load_env_file
+            load_env_file()
+        except ImportError:
+            pass
+        return os.getenv(key, default)
+    
+    # Class attributes that read from environment (will be evaluated after .env is loaded)
     ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY", "")
     GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
     OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
+    
+    # Re-read after ensuring .env is loaded (in case Config was imported before .env loading)
+    @classmethod
+    def reload_env_vars(cls):
+        """Reload environment variables from .env file."""
+        try:
+            from env_loader import load_env_file
+            load_env_file()
+        except ImportError:
+            pass
+        # Update class attributes
+        cls.ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY", "")
+        cls.GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+        cls.OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
     
     # ============================================
     # Video Generation Settings
@@ -99,9 +135,9 @@ class Config:
     # ============================================
     # Google Gemini Configuration
     # ============================================
-    # Available models: gemini-pro, gemini-1.5-pro, gemini-1.5-flash, gemini-2.0-flash-exp
-    # Using 2.0-flash-exp for best balance of speed, quality, and improved reasoning
-    GEMINI_MODEL = "gemini-2.0-flash-exp"  # Latest experimental model with enhanced capabilities
+    # Available models: gemini-2.5-flash, gemini-2.0-flash, gemini-2.5-pro, etc.
+    # Using gemini-2.5-flash for best balance of speed and quality
+    GEMINI_MODEL = "gemini-2.5-flash"  # Latest stable flash model
     
     # ============================================
     # Slide Rendering Settings
@@ -129,3 +165,6 @@ class Config:
 
 # Initialize directories on module import
 Config.create_directories()
+
+# Ensure environment variables are loaded (reload in case they weren't loaded before)
+Config.reload_env_vars()

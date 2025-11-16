@@ -26,7 +26,10 @@ export function ConficiusWidget({
   };
 
   return (
-    <div className="fixed bottom-2 right-2 md:bottom-4 md:right-8 flex flex-col items-center gap-2 z-50">
+    <div
+      className="fixed bottom-8 right-5 md:bottom-12 md:right-10 flex flex-col items-center gap-2 z-50"
+      style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 16px)" }}
+    >
       {/* Name label */}
       <span
         className={cn(
