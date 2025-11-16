@@ -1,59 +1,59 @@
 {
-  "course_title": "IC Design Process: Beginner's VLSI Overview",
+  "course_title": "IC Design Process: Beginner's Overview to VLSI",
   "slides": [
     {
-      "title": "Course Goal: From Code to Chip",
+      "title": "Welcome to IC Design Process",
       "points": [
-        "Beginner's VLSI overview.",
-        "Connects HDL code to silicon.",
-        "Theory-based, not programming."
+        "Bridging HDL code to actual silicon circuits.",
+        "Overview of VLSI design and manufacturing.",
+        "Focus on theory, not coding practices."
       ],
-      "speaker_notes": "Welcome to this beginner's overview of VLSI technology! Our core goal is to bridge the gap, connecting what you write in Hardware Description Languages to the actual silicon circuit. This course offers a theoretical, high-level understanding of the entire IC design and manufacturing process, without focusing on specific coding."
+      "speaker_notes": "This course, \"IC Design Process,\" demystifies how HDL code translates into physical silicon. We'll explore the VLSI design and manufacturing flow, from RTL to final product. It's a beginner's overview, focusing on core concepts, not specific coding."
     },
     {
-      "title": "ICs: Definition & Evolution",
+      "title": "ICs and Their Evolution",
       "points": [
-        "IC: Many circuits on tiny silicon.",
-        "SoC: Full electronic system on one chip.",
-        "Replaced vacuum tubes, then discrete transistors."
+        "IC: Electronic circuits on a tiny semiconductor plate.",
+        "SOC: Complete system on a single chip.",
+        "From bulky vacuum tubes to compact transistors."
       ],
-      "speaker_notes": "An Integrated Circuit, or IC, places numerous electronic circuits onto a tiny silicon plate. A System-on-Chip, or SoC, integrates a complete electronic system, housing billions of transistors. This evolved from bulky vacuum tubes, then discrete transistors, to today's compact, integrated designs on a single silicon piece."
+      "speaker_notes": "An Integrated Circuit, or IC, packs electronic circuits onto a tiny silicon plate. A System-on-Chip, SOC, integrates an entire electronic system onto one chip. Circuits evolved from bulky vacuum tubes to compact transistors, setting the stage for integrated designs."
     },
     {
-      "title": "VLSI: Scale & Impact",
+      "title": "Scaling: From SSI to VLSI",
       "points": [
-        "Integration scaled from few to billions.",
-        "From SSI to LSI.",
-        "VLSI: universal term for high-density ICs."
+        "Early ICs: Few components (SSI).",
+        "Increased density: MSI, LSI, ULSI.",
+        "Modern standard: VLSI (Very Large Scale Integration)."
       ],
-      "speaker_notes": "IC integration evolved from just tens of components in Small-Scale Integration, or SSI, to millions and eventually billions of transistors. While stages like MSI and LSI marked this growth, today, all advanced, high-density IC manufacturing is universally termed Very Large Scale Integration, or VLSI."
+      "speaker_notes": "IC technology rapidly scaled from Small-Scale Integration, SSI, through Medium and Large-Scale Integration, housing billions of transistors by 2008. Today, all advanced IC manufacturing, regardless of transistor count, is simply known as Very Large Scale Integration, or VLSI."
     },
     {
-      "title": "Digital Circuits: Core Concepts",
+      "title": "Digital Circuit Fundamentals",
       "points": [
-        "Data is binary (voltage states).",
-        "Transistors act as on/off switches.",
-        "Two types: Sequential (with memory) and Combinational."
+        "Data represented by binary (voltage states).",
+        "Switches (transistors) are basic building blocks.",
+        "Combinational vs. Sequential circuits (memory)."
       ],
-      "speaker_notes": "Digital circuits convert data to binary, using voltage states for 0s and 1s. Transistors are their fundamental building blocks, acting as simple on/off switches. We distinguish between combinational circuits, where output depends solely on current inputs, and sequential circuits, which include memory and depend on past inputs."
+      "speaker_notes": "Digital circuits process data as binary numbers, represented by voltage states, with transistors acting as fundamental switches. We differentiate combinational circuits, whose output depends solely on current inputs, from sequential circuits, which incorporate memory and thus depend on input history."
     },
     {
-      "title": "Building Blocks of Digital ICs",
+      "title": "Gates, Flip-Flops, Transistors",
       "points": [
-        "Digital circuits break down to logic gates & flip-flops.",
-        "Flip-flops are made of logic gates.",
-        "All logic gates are made of transistors."
+        "Digital circuits composed of logic gates and flip-flops.",
+        "Seven basic logic gates (AND, OR, NOT, etc.).",
+        "Flip-flops are memory elements, built from gates."
       ],
-      "speaker_notes": "Digital circuits are constructed from two primary components: logic gates and flip-flops. Flip-flops, which store a single bit of data, are themselves built using various logic gates. Ultimately, every single logic gate, like NAND or NOR, is fundamentally realized using combinations of transistors. This forms a hierarchical structure."
+      "speaker_notes": "Digital circuits are built from logic gates and flip-flops. Logic gates perform boolean operations, while flip-flops are essential memory elements storing single bits. Importantly, flip-flops themselves are constructed using various logic gates."
     },
     {
-      "title": "HDLs: Abstracting Complexity",
+      "title": "The Power of Abstraction",
       "points": [
-        "Digital circuits are fundamentally transistor-based.",
-        "Complex circuits require abstraction.",
-        "HDLs model circuits, hiding transistor details."
+        "Every digital circuit is made of transistors.",
+        "Logic gates are made of transistors; flip-flops from gates.",
+        "HDLs abstract complex transistor-level details."
       ],
-      "speaker_notes": "In summary, all digital circuits are ultimately built from a vast number of transistors, forming gates and flip-flops. Managing this complexity demands abstraction. Hardware Description Languages, or HDLs, allow us to model these intricate circuits at a higher level, effectively hiding the overwhelming transistor-level details."
+      "speaker_notes": "Ultimately, every digital circuit boils down to a vast number of transistors: gates from transistors, flip-flops from gates. To manage this complexity, Hardware Description Languages, or HDLs, offer an abstract design level, effectively hiding intricate transistor details."
     }
   ]
 }

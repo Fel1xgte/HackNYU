@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;600;700&family=Cormorant+Garamond:wght@300;400;500;600;700&family=Cinzel:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -8,16 +10,16 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 12 40% 96%;
-    --foreground: 12 25% 20%;
+    --background: 12 40% 98%;
+    --foreground: 12 20% 15%;
 
     --card: 20 40% 92%;
-    --card-foreground: 12 25% 20%;
+    --card-foreground: 12 20% 15%;
 
     --popover: 20 40% 92%;
-    --popover-foreground: 12 25% 20%;
+    --popover-foreground: 12 20% 15%;
 
-    --primary: 10 42% 58%;
+    --primary: 10 45% 55%;
     --primary-foreground: 40 60% 90%;
 
     --secondary: 10 38% 52%;
@@ -26,21 +28,21 @@ All colors MUST be HSL.
     --muted: 20 30% 85%;
     --muted-foreground: 12 15% 45%;
 
-    --accent: 40 65% 75%;
-    --accent-foreground: 12 25% 20%;
+    --accent: 40 65% 55%;
+    --accent-foreground: 12 20% 15%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 40 60% 90%;
 
     --border: 20 25% 80%;
     --input: 20 25% 80%;
-    --ring: 10 42% 58%;
+    --ring: 10 45% 55%;
 
     --radius: 1rem;
 
-    --hero-gradient: linear-gradient(135deg, hsl(10 42% 58% / 0.95), hsl(10 38% 52% / 0.9));
+    --hero-gradient: linear-gradient(135deg, hsl(10 45% 55% / 0.75), hsl(10 38% 52% / 0.7));
     --card-shadow: 0 8px 32px hsl(10 42% 30% / 0.15);
-    --upload-border: hsl(10 38% 52% / 0.3);
+    --upload-border: hsl(10 38% 52% / 0.5);
     
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -62,7 +64,7 @@ All colors MUST be HSL.
     --popover: 12 25% 16%;
     --popover-foreground: 40 60% 90%;
 
-    --primary: 10 42% 58%;
+    --primary: 10 45% 55%;
     --primary-foreground: 40 60% 90%;
 
     --secondary: 10 38% 52%;
@@ -71,7 +73,7 @@ All colors MUST be HSL.
     --muted: 12 20% 24%;
     --muted-foreground: 20 15% 60%;
 
-    --accent: 40 65% 75%;
+    --accent: 40 65% 55%;
     --accent-foreground: 12 25% 16%;
 
     --destructive: 0 62.8% 30.6%;
@@ -79,9 +81,9 @@ All colors MUST be HSL.
 
     --border: 12 20% 24%;
     --input: 12 20% 24%;
-    --ring: 10 42% 58%;
+    --ring: 10 45% 55%;
     
-    --hero-gradient: linear-gradient(135deg, hsl(10 42% 48% / 0.95), hsl(10 38% 42% / 0.9));
+    --hero-gradient: linear-gradient(135deg, hsl(10 45% 48% / 0.75), hsl(10 38% 42% / 0.7));
     --card-shadow: 0 8px 32px hsl(0 0% 0% / 0.3);
     
     --sidebar-background: 240 5.9% 10%;
@@ -103,4 +105,93 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Typography - Ancient/Calligraphy fonts */
+.font-heading {
+  font-family: 'Dancing Script', 'Great Vibes', cursive;
+}
+
+.font-body-elegant {
+  font-family: 'Cormorant Garamond', 'Cinzel', serif;
+}
+
+.font-body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+}
+
+/* Typography scale */
+body {
+  font-size: 16px; /* Base: 1rem */
+  line-height: 1.5;
+}
+
+.text-xs { font-size: 0.75rem; } /* 12px */
+.text-sm { font-size: 0.875rem; } /* 14px */
+.text-base { font-size: 1rem; } /* 16px */
+.text-lg { font-size: 1.125rem; } /* 18px */
+.text-xl { font-size: 1.25rem; } /* 20px */
+.text-2xl { font-size: 1.5rem; } /* 24px */
+.text-3xl { font-size: 1.875rem; } /* 30px */
+.text-4xl { font-size: 2.25rem; } /* 36px */
+.text-5xl { font-size: 3rem; } /* 48px */
+
+/* Accessibility - Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Keyboard navigation - Focus indicators */
+*:focus-visible {
+  outline: 2px solid hsl(var(--accent));
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid hsl(var(--accent));
+  outline-offset: 2px;
+}
+
+/* Background light pass animation */
+@keyframes light-pass {
+  0% {
+    background-position: -200% 0;
+  }
+  50% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.animate-light-pass {
+  animation: light-pass 10s ease-in-out infinite;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    transparent 30%,
+    rgba(255, 255, 255, 0.15) 50%,
+    transparent 70%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+}
+
+/* Text shadow utility for better contrast on gradients */
+.text-on-gradient {
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+}
+
+.text-on-gradient-light {
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.3);
 }

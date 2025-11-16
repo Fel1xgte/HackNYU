@@ -16,7 +16,7 @@ interface ChatBubblesProps {
 
 export function ChatBubbles({ messages, onDismiss }: ChatBubblesProps) {
   return (
-    <div className="fixed top-24 right-24 flex flex-col gap-3 z-40 max-w-md">
+    <div className="fixed top-16 right-4 md:right-24 flex flex-col gap-2 z-40 max-w-sm max-h-[50vh] overflow-y-auto">
       {messages.map(message => (
         <ChatBubble key={message.id} message={message} onDismiss={onDismiss} />
       ))}
@@ -37,14 +37,14 @@ function ChatBubble({ message, onDismiss }: ChatBubbleProps) {
     // Fade in animation
     setTimeout(() => setIsVisible(true), 10);
 
-    // Auto-dismiss user messages after 5 seconds if not pinned
+    // Auto-dismiss user messages after 8 seconds if not pinned
     if (message.isUser && !isPinned) {
       const timer = setTimeout(() => {
         setIsVisible(false);
         setTimeout(() => {
           onDismiss?.(message.id);
         }, 300); // Wait for fade-out animation
-      }, 5000);
+      }, 8000);
 
       return () => clearTimeout(timer);
     }
@@ -63,13 +63,13 @@ function ChatBubble({ message, onDismiss }: ChatBubbleProps) {
     >
       <div
         className={cn(
-          "rounded-2xl shadow-card p-4 max-w-sm",
+          "rounded-2xl shadow-lg p-3 max-w-sm border text-sm",
           message.isUser
-            ? "bg-secondary text-primary-foreground ml-auto"
-            : "bg-card text-card-foreground"
+            ? "bg-secondary/95 text-primary-foreground ml-auto border-secondary/50"
+            : "bg-card/98 text-card-foreground border-accent/30"
         )}
       >
-        <div className="flex items-start gap-2">
+        <div className="flex items-start gap-3">
           <p className="flex-1 text-sm leading-relaxed">{message.text}</p>
           {!message.isUser && (
             <button
@@ -79,6 +79,7 @@ function ChatBubble({ message, onDismiss }: ChatBubbleProps) {
                 isPinned && "bg-accent/30"
               )}
               title={isPinned ? "Unpin" : "Pin"}
+              aria-label={isPinned ? "Unpin message" : "Pin message"}
             >
               <X className="w-4 h-4" />
             </button>

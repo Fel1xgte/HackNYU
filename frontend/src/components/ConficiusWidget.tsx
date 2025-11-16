@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { Mic, Loader2 } from "lucide-react";
 import confuciusAvatar from "@/assets/confucius-avatar.jpg";
 import { cn } from "@/lib/utils";
@@ -26,11 +26,11 @@ export function ConficiusWidget({
   };
 
   return (
-    <div className="fixed bottom-12 right-24 flex flex-col items-center gap-2 z-50">
+    <div className="fixed bottom-2 right-2 md:bottom-4 md:right-8 flex flex-col items-center gap-2 z-50">
       {/* Name label */}
       <span
         className={cn(
-          "text-accent font-semibold text-lg transition-transform duration-300",
+          "text-accent font-semibold text-sm md:text-lg transition-transform duration-300 font-body-elegant",
           state === "listening" && "scale-110"
         )}
       >
@@ -38,26 +38,27 @@ export function ConficiusWidget({
       </span>
 
       {/* Avatar with state-based animations */}
-      <div className="relative">
+      <div className="relative overflow-hidden rounded-2xl w-48 h-48 md:w-48 md:h-64">
         <img
           ref={avatarRef}
           src={confuciusAvatar}
           alt="Confucius Avatar"
           className={cn(
-            "w-64 h-auto rounded-2xl shadow-card transition-all duration-300 relative z-10",
+            "w-full h-full object-cover object-top rounded-2xl shadow-card transition-all duration-300 relative z-10",
             state === "listening" && "scale-105 animate-pulse",
             state === "answering" && "scale-105"
           )}
+          loading="lazy"
         />
 
-        {/* Glow effect */}
+        {/* Glow effect - reduced */}
         <div
           className={cn(
-            "absolute inset-0 rounded-2xl blur-xl transition-all duration-500",
-            state === "idle" && "bg-accent/20",
-            state === "listening" && "bg-accent/40 animate-pulse",
-            state === "processing" && "bg-accent/30",
-            state === "answering" && "bg-accent/40"
+            "absolute inset-0 rounded-2xl blur-md transition-all duration-500",
+            state === "idle" && "bg-accent/5",
+            state === "listening" && "bg-accent/15 animate-pulse",
+            state === "processing" && "bg-accent/10",
+            state === "answering" && "bg-accent/15"
           )}
         />
 
@@ -94,24 +95,32 @@ export function ConficiusWidget({
         )}
       </div>
 
-      {/* Chinese text */}
       <div className="text-xs text-accent/60 italic">孔子</div>
 
       {/* Mic button */}
       <button
         onClick={onMicClick}
         className={cn(
-          "mt-4 w-20 h-20 rounded-full bg-accent text-primary-foreground shadow-card hover:shadow-xl transition-all duration-300 flex items-center justify-center",
+          "mt-2 w-14 h-14 md:w-16 md:h-16 rounded-full bg-accent text-primary-foreground shadow-card hover:shadow-xl transition-all duration-300 flex items-center justify-center",
           state === "listening" && "animate-pulse scale-110",
           state === "processing" && "opacity-50 cursor-not-allowed",
           state === "answering" && "opacity-50 cursor-not-allowed"
         )}
         disabled={state === "processing" || state === "answering"}
+        aria-label={
+          state === "listening"
+            ? "Stop recording"
+            : state === "processing"
+            ? "Processing"
+            : state === "answering"
+            ? "Speaking"
+            : "Start voice recording"
+        }
       >
         {state === "processing" ? (
-          <Loader2 className="w-8 h-8 animate-spin" />
+          <Loader2 className="w-5 h-5 md:w-6 md:h-6 animate-spin" />
         ) : (
-          <Mic className="w-8 h-8" />
+          <Mic className="w-5 h-5 md:w-6 md:h-6" />
         )}
       </button>
 

@@ -1,7 +1,21 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Download, ArrowLeft, Sparkles } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Download,
+  ArrowLeft,
+  Sparkles,
+  Video,
+  FileImage,
+  ChevronDown,
+  Loader2,
+} from "lucide-react";
 import confuciusLogo from "@/assets/confucius-logo.png";
 import heroBackground from "@/assets/hero-background-2.png";
 import { useVoiceRecording } from "@/hooks/useVoiceRecording";
@@ -23,6 +37,8 @@ const Results = () => {
   const [processingStep, setProcessingStep] = useState("Starting...");
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [videoError, setVideoError] = useState<string | null>(null);
+  const [videoLoading, setVideoLoading] = useState(true);
 
   // Voice Q&A state
   const [widgetState, setWidgetState] = useState<WidgetState>("idle");
@@ -115,7 +131,10 @@ const Results = () => {
 
         if (data.status === "complete") {
           setIsProcessing(false);
-          setVideoUrl("http://127.0.0.1:8000/get-video/");
+          const videoUrlWithTimestamp = `http://127.0.0.1:8000/get-video/?t=${Date.now()}`;
+          setVideoUrl(videoUrlWithTimestamp);
+          setVideoLoading(true);
+          setVideoError(null);
           clearInterval(intervalId);
         } else if (data.status === "failed") {
           setIsProcessing(false);
@@ -141,9 +160,9 @@ const Results = () => {
   }, []);
 
   // ----------------------------
-  // Download handler
+  // Download handlers
   // ----------------------------
-  const handleDownload = async () => {
+  const handleDownloadVideo = async () => {
     if (!videoUrl) return;
 
     try {
@@ -159,6 +178,26 @@ const Results = () => {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Download failed:", error);
+    }
+  };
+
+  const handleDownloadSlides = async () => {
+    try {
+      const response = await fetch("http://127.0.0.1:8000/download-slides/");
+      if (!response.ok) {
+        throw new Error("Failed to download slides");
+      }
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "confucius-lecture-slides.zip";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Download slides failed:", error);
     }
   };
 
@@ -459,6 +498,19 @@ const Results = () => {
     }
   }, [recordingError]);
 
+  // Handle video URL changes and ensure video loads
+  useEffect(() => {
+    if (videoUrl && videoRef.current) {
+      const video = videoRef.current;
+      setVideoLoading(true);
+      setVideoError(null);
+
+      // Force reload the video when URL changes
+      // This ensures the video element picks up the new URL
+      video.load();
+    }
+  }, [videoUrl]);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -474,10 +526,10 @@ const Results = () => {
   }, []);
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
+    <div className="h-screen relative overflow-hidden">
       {/* Background */}
       <div
-        className="absolute inset-0 bg-cover bg-center"
+        className="absolute inset-0 bg-cover bg-center blur-sm opacity-50"
         style={{
           backgroundImage: `url(${heroBackground})`,
         }}
@@ -485,70 +537,193 @@ const Results = () => {
       <div className="absolute inset-0 bg-hero-gradient" />
 
       {/* Content */}
-      <div className="relative z-10 min-h-screen flex flex-col">
+      <div className="relative z-10 h-screen flex flex-col overflow-hidden">
         {/* Logo */}
-        <div className="p-8 animate-fade-in">
+        <div className="p-4 md:p-6 animate-fade-in flex-shrink-0">
           <Link to="/">
             <img
               src={confuciusLogo}
               alt="Confucius"
-              className="h-20 w-auto hover:scale-110 transition-transform duration-300 cursor-pointer animate-glow"
+              className="h-12 md:h-16 w-auto hover:scale-110 transition-transform duration-300 cursor-pointer"
+              loading="eager"
             />
           </Link>
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 flex flex-col px-36 pb-16">
+        <div className="flex-1 flex flex-col px-4 md:px-8 lg:px-16 xl:px-24 pb-4 overflow-hidden">
           {/* Heading */}
-          <div className="mb-12 animate-fade-in">
+          <div className="mb-4 md:mb-6 animate-fade-in flex-shrink-0">
             <div className="relative inline-block">
-              <h1 className="text-5xl md:text-6xl font-bold text-accent mb-4 relative z-10">
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-accent mb-2 relative z-10 font-body-elegant text-on-gradient">
                 Clarity for Your Lecture
               </h1>
-              <div className="absolute inset-0 blur-2xl bg-accent/20 animate-pulse" />
             </div>
-            <p className="text-xl text-primary-foreground mt-4 animate-slide-in-left animation-delay-200">
-              <span className="font-semibold">Confucius</span> is here to
-              explain, clarify, and help you learn.
+            <p className="text-base md:text-lg text-primary-foreground/95 mt-2 animate-slide-in-left animation-delay-200 font-body text-on-gradient-light">
+              <span className="font-semibold font-body-elegant">Confucius</span>{" "}
+              is here to explain, clarify, and help you learn.
             </p>
           </div>
 
           {/* Video Player */}
-          <div className="w-full max-w-4xl animate-scale-in">
+          <div className="w-full max-w-4xl animate-scale-in mb-4 flex-1 flex flex-col overflow-hidden">
             <div className="relative group">
-              {/* Decorative corners */}
-              <div className="absolute -top-2 -left-2 w-8 h-8 border-t-4 border-l-4 border-accent rounded-tl-lg opacity-60 group-hover:opacity-100 transition-opacity" />
-              <div className="absolute -top-2 -right-2 w-8 h-8 border-t-4 border-r-4 border-accent rounded-tr-lg opacity-60 group-hover:opacity-100 transition-opacity" />
-              <div className="absolute -bottom-2 -left-2 w-8 h-8 border-b-4 border-l-4 border-accent rounded-bl-lg opacity-60 group-hover:opacity-100 transition-opacity" />
-              <div className="absolute -bottom-2 -right-2 w-8 h-8 border-b-4 border-r-4 border-accent rounded-br-lg opacity-60 group-hover:opacity-100 transition-opacity" />
+              {/* Glow - reduced */}
+              <div className="absolute inset-0 bg-accent/3 rounded-lg blur-md group-hover:bg-accent/8 transition-all duration-500" />
 
-              {/* Glow */}
-              <div className="absolute inset-0 bg-accent/10 rounded-lg blur-xl group-hover:bg-accent/20 transition-all duration-500" />
-
-              <div className="relative bg-black rounded-lg overflow-hidden shadow-card aspect-video flex items-center justify-center border-2 border-accent/30">
+              <div className="relative bg-gradient-to-br from-primary/20 via-secondary/20 to-accent/20 rounded-lg overflow-hidden shadow-card aspect-video flex items-center justify-center border-2 border-accent/30 backdrop-blur-sm">
                 {isProcessing ? (
-                  <div className="flex flex-col items-center gap-4">
-                    <Sparkles className="w-12 h-12 text-accent animate-spin" />
-                    <p className="text-primary-foreground text-lg">
-                      {processingStep}
-                    </p>
+                  <div className="flex flex-col items-center gap-6 p-8">
+                    {/* Animated loading dots */}
+                    <div className="flex gap-2">
+                      <div
+                        className="w-3 h-3 bg-accent rounded-full animate-bounce"
+                        style={{ animationDelay: "0s" }}
+                      />
+                      <div
+                        className="w-3 h-3 bg-accent rounded-full animate-bounce"
+                        style={{ animationDelay: "0.2s" }}
+                      />
+                      <div
+                        className="w-3 h-3 bg-accent rounded-full animate-bounce"
+                        style={{ animationDelay: "0.4s" }}
+                      />
+                    </div>
+                    {/* Sparkles icon */}
+                    <div className="relative">
+                      <Sparkles className="w-16 h-16 text-accent animate-spin relative z-10" />
+                    </div>
+                    {/* Processing step text */}
+                    <div
+                      className="text-center"
+                      role="status"
+                      aria-live="polite"
+                    >
+                      <p className="text-primary-foreground text-xl font-semibold font-body mb-2">
+                        {processingStep}
+                      </p>
+                      <div className="w-64 h-1 bg-accent/20 rounded-full overflow-hidden mt-4">
+                        <div
+                          className="h-full bg-accent rounded-full animate-pulse"
+                          style={{ width: "60%" }}
+                        />
+                      </div>
+                    </div>
                   </div>
                 ) : error ? (
-                  <div className="flex flex-col items-center gap-4">
+                  <div
+                    className="flex flex-col items-center gap-4"
+                    role="alert"
+                    aria-live="assertive"
+                  >
                     <p className="text-red-500 text-lg">Error: {error}</p>
                     <Link to="/">
-                      <Button>Try Again</Button>
+                      <Button aria-label="Try uploading again">
+                        Try Again
+                      </Button>
                     </Link>
                   </div>
                 ) : videoUrl ? (
-                  <video
-                    ref={videoRef}
-                    controls
-                    className="w-full h-full"
-                    src={videoUrl}
-                  >
-                    Your browser does not support the video tag.
-                  </video>
+                  <div className="w-full h-full relative">
+                    {videoLoading && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-primary/20 z-10">
+                        <Loader2 className="w-8 h-8 text-accent animate-spin" />
+                      </div>
+                    )}
+                    {videoError ? (
+                      <div className="flex flex-col items-center justify-center h-full gap-4 p-8">
+                        <p className="text-red-500 text-lg font-semibold">
+                          Video playback error
+                        </p>
+                        <p className="text-primary-foreground/70 text-sm">
+                          {videoError}
+                        </p>
+                        <Button
+                          onClick={() => {
+                            setVideoError(null);
+                            setVideoLoading(true);
+                            if (videoRef.current) {
+                              // Force reload with new timestamp
+                              const newUrl = `http://127.0.0.1:8000/get-video/?t=${Date.now()}`;
+                              setVideoUrl(newUrl);
+                              videoRef.current.load();
+                            }
+                          }}
+                          variant="outline"
+                        >
+                          Retry
+                        </Button>
+                      </div>
+                    ) : (
+                      <video
+                        ref={videoRef}
+                        controls
+                        preload="auto"
+                        playsInline
+                        className="w-full h-full object-contain"
+                        src={videoUrl}
+                        onLoadStart={() => {
+                          setVideoLoading(true);
+                          setVideoError(null);
+                        }}
+                        onLoadedData={() => {
+                          setVideoLoading(false);
+                          setVideoError(null);
+                        }}
+                        onLoadedMetadata={() => {
+                          setVideoLoading(false);
+                          setVideoError(null);
+                        }}
+                        onCanPlay={() => {
+                          setVideoLoading(false);
+                          setVideoError(null);
+                        }}
+                        onCanPlayThrough={() => {
+                          setVideoLoading(false);
+                          setVideoError(null);
+                        }}
+                        onError={e => {
+                          console.error("Video error:", e);
+                          setVideoLoading(false);
+                          const video = videoRef.current;
+                          let errorMessage = "Failed to load video.";
+
+                          if (video) {
+                            const error = video.error;
+                            if (error) {
+                              switch (error.code) {
+                                case error.MEDIA_ERR_ABORTED:
+                                  errorMessage = "Video loading was aborted.";
+                                  break;
+                                case error.MEDIA_ERR_NETWORK:
+                                  errorMessage =
+                                    "Network error while loading video.";
+                                  break;
+                                case error.MEDIA_ERR_DECODE:
+                                  errorMessage = "Video decoding error.";
+                                  break;
+                                case error.MEDIA_ERR_SRC_NOT_SUPPORTED:
+                                  errorMessage = "Video format not supported.";
+                                  break;
+                                default:
+                                  errorMessage =
+                                    "Unknown video error occurred.";
+                              }
+                            }
+                          }
+                          setVideoError(errorMessage);
+                        }}
+                        onWaiting={() => {
+                          setVideoLoading(true);
+                        }}
+                        onPlaying={() => {
+                          setVideoLoading(false);
+                        }}
+                      >
+                        Your browser does not support the video tag.
+                      </video>
+                    )}
+                  </div>
                 ) : (
                   <div className="flex items-center justify-center">
                     <div className="w-24 h-24 rounded-full bg-primary-foreground flex items-center justify-center hover:scale-110 transition-transform cursor-pointer">
@@ -561,35 +736,62 @@ const Results = () => {
           </div>
 
           {/* Row under video: Download left, text centered */}
-          <div className="w-full max-w-4xl mt-12 relative flex items-center justify-between">
-            {/* Download button aligned to left edge of video */}
+          <div className="w-full max-w-4xl mt-4 relative flex items-center justify-between flex-shrink-0">
+            {/* Download dropdown aligned to left edge of video */}
             <div className="relative inline-flex">
-              <div className="absolute inset-0 bg-secondary/30 rounded-full blur-xl group-hover:blur-2xl transition-all" />
-              <Button
-                size="lg"
-                onClick={handleDownload}
-                disabled={isProcessing || !videoUrl}
-                className="relative bg-secondary hover:bg-secondary/90 text-primary-foreground px-10 py-4 text-lg rounded-full shadow-card hover:shadow-xl transition-all duration-300 hover:scale-105 overflow-hidden group disabled:opacity-50"
-              >
-                <span className="absolute inset-0 bg-gradient-to-r from-transparent via-primary-foreground/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-                <Download className="mr-2 h-5 w-5 relative z-10 group-hover:animate-bounce" />
-                <span className="relative z-10">Download</span>
-              </Button>
+              <div className="absolute inset-0 bg-accent/10 rounded-full blur-md group-hover:blur-lg transition-all" />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    size="default"
+                    disabled={isProcessing || !videoUrl}
+                    className="relative bg-accent hover:bg-accent/90 text-primary-foreground px-6 py-2 text-base rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 disabled:opacity-50 border border-accent/60 hover:border-accent"
+                    aria-label="Download options"
+                  >
+                    <Download className="mr-2 h-5 w-5" />
+                    Download
+                    <ChevronDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="start"
+                  className="w-56 bg-card/98 backdrop-blur-sm border border-accent/30 shadow-xl"
+                >
+                  <DropdownMenuItem
+                    onClick={handleDownloadVideo}
+                    disabled={isProcessing || !videoUrl}
+                    className="cursor-pointer focus:bg-accent/20 focus:text-accent-foreground"
+                    aria-label="Download video file"
+                  >
+                    <Video className="mr-2 h-4 w-4" />
+                    <span>Download as Video</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={handleDownloadSlides}
+                    disabled={isProcessing}
+                    className="cursor-pointer focus:bg-accent/20 focus:text-accent-foreground"
+                    aria-label="Download slides as ZIP"
+                  >
+                    <FileImage className="mr-2 h-4 w-4" />
+                    <span>Download as Slides</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
 
             {/* Center text */}
-            <p className="whitespace-nowrap text-sm md:text-base text-primary-foreground/80">
+            <p className="whitespace-nowrap text-sm md:text-base text-primary-foreground/90 font-medium">
               <span className="italic">Confused?</span> Ask{" "}
-              <span className="font-semibold">Confucius</span>
+              <span className="font-semibold font-body-elegant">Confucius</span>
             </p>
           </div>
 
           {/* Upload another video (left under the row) */}
           <Link
             to="/"
-            className="mt-6 text-accent hover:text-accent/80 flex items-center gap-2 transition-all duration-300 hover:gap-3 relative group"
+            className="mt-2 text-accent hover:text-accent/80 flex items-center gap-2 transition-all duration-300 hover:gap-3 relative group text-sm md:text-base flex-shrink-0"
           >
-            <ArrowLeft className="h-14 w-8 group-hover:-translate-x-1 transition-transform" />
+            <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
             <span className="relative">
               Upload another video
               <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-accent scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
@@ -615,7 +817,7 @@ const Results = () => {
         )}
 
         {/* Chinese Decorations */}
-        <div className="absolute top-1/2 left-8 -translate-y-1/2 text-8xl font-bold text-accent/5 pointer-events-none select-none rotate-90 hidden lg:block">
+        <div className="absolute top-1/2 left-4 md:left-8 -translate-y-1/2 text-4xl md:text-8xl font-bold text-accent/5 pointer-events-none select-none rotate-90 hidden md:block">
           学习
         </div>
       </div>

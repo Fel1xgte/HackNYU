@@ -127,6 +127,8 @@ const Index = () => {
         }}
       />
       <div className="absolute inset-0 bg-hero-gradient" />
+      {/* Light pass overlay - reduced opacity */}
+      <div className="absolute inset-0 animate-light-pass pointer-events-none opacity-30" />
 
       {/* Content */}
       <div className="relative z-10 min-h-screen flex flex-col pt-8 pb-28">
@@ -135,7 +137,8 @@ const Index = () => {
           <img
             src={confuciusLogo}
             alt="Confucius"
-            className="h-20 w-auto hover:scale-110 transition-transform duration-300 cursor-pointer animate-glow"
+            className="h-20 w-auto hover:scale-110 transition-transform duration-300 cursor-pointer"
+            loading="eager"
           />
         </div>
 
@@ -144,29 +147,19 @@ const Index = () => {
           {/* Left Side - Text */}
           <div className="flex-1 max-w-xl animate-slide-in-left">
             <div className="relative">
-              <h1 className="text-5xl md:text-7xl font-bold text-primary-foreground mb-6 leading-tight">
+              <h1 className="text-4xl md:text-6xl font-bold text-primary-foreground mb-6 leading-tight font-body-elegant text-on-gradient">
                 Clear Confusions
                 <br />
                 with{" "}
-                <span className="relative inline-block">
-                  <span className="text-accent relative z-10">Confucius</span>
-                  <span className="absolute inset-0 blur-xl bg-accent/30 animate-glow" />
-                </span>
+                <span className="text-accent">Confucius</span>
               </h1>
-              <p className="text-xl md:text-2xl text-primary-foreground/90 leading-relaxed">
+              <p className="text-lg md:text-xl text-primary-foreground/95 leading-relaxed font-body text-on-gradient-light">
                 An AI tutor that turns your lecture videos
                 <br />
                 into simple and clear summaries.
               </p>
               <div className="mt-8 flex gap-4">
-                <div
-                  className="h-1 w-24 bg-accent rounded-full animate-shimmer"
-                  style={{
-                    background:
-                      "linear-gradient(90deg, transparent, hsl(var(--accent)), transparent)",
-                    backgroundSize: "200% 100%",
-                  }}
-                />
+                <div className="h-1 w-24 bg-accent rounded-full" />
                 <div className="h-1 w-16 bg-accent/60 rounded-full" />
                 <div className="h-1 w-8 bg-accent/30 rounded-full" />
               </div>
@@ -176,34 +169,34 @@ const Index = () => {
           {/* Right Side - Upload Card */}
           <div className="flex-1 flex justify-center items-center animate-slide-in-right">
             <div className="relative group">
-              {/* Glow effect */}
-              <div className="absolute inset-0 bg-accent/20 rounded-3xl blur-2xl group-hover:bg-accent/30 transition-all duration-500" />
+              {/* Glow effect - reduced */}
+              <div className="absolute inset-0 bg-accent/5 rounded-3xl blur-lg group-hover:bg-accent/10 transition-all duration-500" />
 
-              <div className="relative bg-card/95 backdrop-blur-sm rounded-3xl p-12 shadow-card w-full max-w-md border-2 border-accent/20 hover:border-accent/40 transition-all duration-300">
+              <div className="relative bg-card rounded-3xl p-6 md:p-12 shadow-xl w-full max-w-lg border-2 border-accent/50 hover:border-accent/60 transition-all duration-300 backdrop-blur-md">
                 <div
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
-                  className={`border-4 border-dashed rounded-2xl p-12 transition-all duration-300 ${
+                  className={`border-2 border-dashed rounded-2xl p-6 md:p-12 transition-all duration-300 ${
                     isDragging
-                      ? "border-primary bg-primary/10 scale-105"
-                      : "border-[var(--upload-border)] bg-transparent hover:border-primary/50 hover:scale-102"
+                      ? "border-primary bg-primary/15"
+                      : "border-primary/60 bg-primary/5 hover:border-primary/80 hover:bg-primary/10"
                   }`}
                 >
                   <div className="flex flex-col items-center text-center">
                     <div className="relative mb-4">
                       <ImageIcon className="w-16 h-16 text-primary relative z-10 hover:scale-110 transition-transform duration-300" />
-                      <div className="absolute inset-0 blur-xl bg-primary/30 animate-pulse" />
                     </div>
-                    <h2 className="text-xl font-semibold mb-2">
+                    <h2 className="text-xl font-semibold mb-2 text-foreground">
                       Drag & Drop{" "}
                       <span className="text-primary">MP4 Video</span>
                     </h2>
-                    <p className="text-sm text-muted-foreground mb-4">
+                    <p className="text-sm text-foreground/80 mb-4">
                       or{" "}
                       <button
                         onClick={() => fileInputRef.current?.click()}
                         className="text-primary underline hover:text-primary/80 transition-colors relative group/btn"
+                        aria-label="Browse files"
                       >
                         browse file
                         <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-primary scale-x-0 group-hover/btn:scale-x-100 transition-transform origin-left" />
@@ -229,11 +222,11 @@ const Index = () => {
                   onClick={handleUpload}
                   disabled={!selectedFile}
                   size="lg"
-                  className="w-full mt-8 bg-secondary hover:bg-secondary/90 text-primary-foreground text-lg py-6 rounded-full shadow-lg disabled:opacity-50 relative overflow-hidden group/upload transition-all duration-300 hover:scale-105 hover:shadow-xl"
+                  className="w-full mt-8 bg-secondary hover:bg-secondary/90 text-primary-foreground text-lg py-6 rounded-full shadow-lg disabled:opacity-50 transition-all duration-300 hover:scale-105 hover:shadow-xl"
+                  aria-label="Upload video file"
                 >
-                  <span className="absolute inset-0 bg-gradient-to-r from-transparent via-primary-foreground/10 to-transparent translate-x-[-100%] group-hover/upload:translate-x-[100%] transition-transform duration-1000" />
-                  <Upload className="mr-2 h-5 w-5 relative z-10" />
-                  <span className="relative z-10">Upload</span>
+                  <Upload className="mr-2 h-5 w-5" />
+                  Upload
                 </Button>
               </div>
             </div>

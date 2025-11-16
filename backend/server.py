@@ -6,6 +6,7 @@ import tempfile
 import math
 import torch
 import whisper
+import zipfile
 from pathlib import Path
 from fastapi import FastAPI, UploadFile, File, BackgroundTasks, HTTPException, Form
 from fastapi.responses import FileResponse, JSONResponse
@@ -196,6 +197,7 @@ async def get_video():
     """
     Endpoint to DOWNLOAD the final video.
     The UI will call this once /get-video-status/ returns "complete".
+    Supports HTTP range requests for video streaming.
     """
     # Get the final path from your config file
     final_video_path = Config.FINAL_OUTPUT_DIR / Config.FINAL_VIDEO_NAME
@@ -205,13 +207,77 @@ async def get_video():
         return FileResponse(
             final_video_path,
             media_type="video/mp4",
-            filename="final_summary.mp4"
+            filename="final_summary.mp4",
+            headers={
+                "Accept-Ranges": "bytes",
+                "Content-Type": "video/mp4",
+            }
         )
     else:
         return JSONResponse(
             status_code=404, 
             content={"status": "not_found", "detail": "File not ready or does not exist."}
         )
+
+
+@app.get("/download-slides/")
+async def download_slides(background_tasks: BackgroundTasks):
+    """
+    Endpoint to DOWNLOAD all slide images as a ZIP archive.
+    Reads PNG files from RENDERED_SLIDES_DIR and creates a ZIP file.
+    """
+    slides_dir = Config.RENDERED_SLIDES_DIR
+    
+    if not slides_dir.exists():
+        return JSONResponse(
+            status_code=404,
+            content={"status": "not_found", "detail": "Slides directory does not exist."}
+        )
+    
+    # Find all PNG files in the slides directory
+    slide_files = sorted(slides_dir.glob("*.png"))
+    
+    if not slide_files:
+        return JSONResponse(
+            status_code=404,
+            content={"status": "not_found", "detail": "No slide images found."}
+        )
+    
+    # Create a temporary ZIP file
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".zip") as tmp_zip:
+        zip_path = Path(tmp_zip.name)
+        
+        try:
+            # Create ZIP archive
+            with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                for slide_file in slide_files:
+                    # Add file to ZIP with just the filename (not full path)
+                    zipf.write(slide_file, slide_file.name)
+            
+            print(f"Created slides ZIP: {zip_path} with {len(slide_files)} slides")
+            
+            # Cleanup function
+            def cleanup():
+                if zip_path.exists():
+                    os.unlink(zip_path)
+            
+            # Add cleanup task
+            background_tasks.add_task(cleanup)
+            
+            # Return ZIP file
+            return FileResponse(
+                zip_path,
+                media_type="application/zip",
+                filename="confucius-lecture-slides.zip"
+            )
+        except Exception as e:
+            # Clean up on error
+            if zip_path.exists():
+                os.unlink(zip_path)
+            return JSONResponse(
+                status_code=500,
+                content={"status": "error", "detail": f"Failed to create ZIP archive: {str(e)}"}
+            )
 
 
 # --- Voice Q&A Endpoints ---
