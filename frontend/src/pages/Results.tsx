@@ -13,6 +13,67 @@ const Results = () => {
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // Helper function to parse detailed status messages
+  const getStatusMessage = (statusString: string): string => {
+    const parts = statusString.split(":");
+    const mainStatus = parts[0];
+    const subStatus = parts[1];
+
+    // Transcript generation
+    if (mainStatus === "generating_slide_text") {
+      if (subStatus === "loading_transcript")
+        return "Loading transcript data...";
+      if (subStatus === "calling_ai_model")
+        return "Asking AI to generate slides... (30-60 sec)";
+      if (subStatus === "saving_slides") return "Saving slide content...";
+      return "Generating slide content... (Step 2/5)";
+    }
+
+    // Slide image generation
+    if (mainStatus === "generating_slide_images") {
+      if (subStatus?.startsWith("slide_")) {
+        const match = subStatus.match(/slide_(\d+)_of_(\d+)/);
+        if (match) {
+          return `Creating slide image ${match[1]} of ${match[2]}... (Step 3/5)`;
+        }
+      }
+      return "Creating slide images... (Step 3/5)";
+    }
+
+    // Audio generation
+    if (mainStatus === "generating_audio") {
+      if (subStatus?.startsWith("audio_")) {
+        const match = subStatus.match(/audio_(\d+)_of_(\d+)/);
+        if (match) {
+          return `Synthesizing audio ${match[1]} of ${match[2]}... (Step 4/5)`;
+        }
+      }
+      return "Synthesizing narration... (Step 4/5)";
+    }
+
+    // Video stitching
+    if (mainStatus === "stitching_video") {
+      if (subStatus?.startsWith("segment_")) {
+        const match = subStatus.match(/segment_(\d+)/);
+        if (match) {
+          return `Stitching video segment ${match[1]}... (Step 5/5)`;
+        }
+      }
+      if (subStatus === "merging_segments")
+        return "Merging all segments... (Step 5/5)";
+      return "Stitching final video... (Step 5/5)";
+    }
+
+    // Default mappings
+    const defaultMessages: Record<string, string> = {
+      initializing: "Setting up workspace...",
+      decoding_video: "Extracting audio and frames... (Step 1/5)",
+      complete: "Your video is ready!",
+    };
+
+    return defaultMessages[mainStatus] || "Processing...";
+  };
+
   useEffect(() => {
     let intervalId: number;
 
@@ -30,16 +91,7 @@ const Results = () => {
           setError(data.detail || "Processing failed");
           clearInterval(intervalId);
         } else if (data.status === "processing") {
-          // Map backend status to user-friendly messages
-          const stepMessages: Record<string, string> = {
-            initializing: "Setting up workspace...",
-            decoding_video: "Extracting audio and frames... (Step 1/5)",
-            generating_slide_text: "Generating slide content... (Step 2/5)",
-            generating_slide_images: "Creating slide images... (Step 3/5)",
-            generating_audio: "Synthesizing narration... (Step 4/5)",
-            stitching_video: "Stitching final video... (Step 5/5)",
-          };
-          setProcessingStep(stepMessages[data.step] || "Processing...");
+          setProcessingStep(getStatusMessage(data.step));
         }
       } catch (error) {
         setError("Failed to connect to server");

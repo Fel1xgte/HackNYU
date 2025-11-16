@@ -11,12 +11,21 @@ import json
 import base64
 import requests
 import sys
+from pathlib import Path
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from config import Config
 from env_loader import get_api_key
 
 # ================== CONFIG ==================
 # 1. API Key is now loaded securely
 OPENROUTER_API_KEY = get_api_key("OPENROUTER_API_KEY", required=True)
+
+
+def write_status(status: str):
+    """Write status to status.txt for frontend polling"""
+    status_file = Path("workspace/status.txt")
+    status_file.write_text(status)
+    print(f"📊 Status: {status}")
 
 MODEL_NAME = "google/gemini-2.5-flash-image-preview"
 ASPECT_RATIO = "16:9"
@@ -161,9 +170,27 @@ def save_data_url_to_file(data_url: str, filepath: str) -> None:
 
 # ================== Main execution ==================
 
+def generate_single_slide(idx: int, slide: dict, total: int) -> str:
+    """Generate one slide image - can run in parallel"""
+    write_status(f"generating_slide_images:slide_{idx}_of_{total}")
+    
+    try:
+        prompt = slide_to_prompt(slide, idx, total)
+        data_url = call_openrouter_image(prompt, aspect_ratio=ASPECT_RATIO)
+        
+        filename = os.path.join(OUTPUT_DIR, f"slide_{idx:02d}.png")
+        save_data_url_to_file(data_url, filename)
+        
+        print(f"✅ Generated slide {idx}/{total}: {filename}")
+        return filename
+    except Exception as e:
+        print(f"❌ FAILED to generate slide {idx}: {e}", file=sys.stderr)
+        raise
+
+
 def main():
     """
-    Main function to load the slide JSON and generate all images.
+    Main function to load the slide JSON and generate all images IN PARALLEL.
     """
     input_json_path = str(Config.OUTPUT_SLIDES_JSON)
     if not os.path.exists(input_json_path):
@@ -180,27 +207,29 @@ def main():
         return
 
     total = len(slides_data)
-    print(f"Loaded {total} slides from {input_json_path}.")
+    print(f"🚀 Generating {total} slides IN PARALLEL (3 at a time)...")
     
     filenames = []
-    for idx, slide in enumerate(slides_data, start=1):
-        print(f"\n=== Generating slide {idx}/{total}: {slide.get('title')} ===")
+    
+    # Use ThreadPoolExecutor with max 3 workers (API rate limit)
+    with ThreadPoolExecutor(max_workers=3) as executor:
+        # Submit all tasks
+        future_to_idx = {
+            executor.submit(generate_single_slide, idx, slide, total): idx
+            for idx, slide in enumerate(slides_data, start=1)
+        }
         
-        try:
-            prompt = slide_to_prompt(slide, idx, total)
-            data_url = call_openrouter_image(prompt, aspect_ratio=ASPECT_RATIO)
+        # Collect results as they complete
+        for future in as_completed(future_to_idx):
+            idx = future_to_idx[future]
+            try:
+                result_path = future.result()
+                filenames.append(result_path)
+            except Exception as e:
+                print(f"❌ Error generating slide {idx}: {str(e)}", file=sys.stderr)
 
-            filename = os.path.join(OUTPUT_DIR, f"slide_{idx:02d}.png")
-            save_data_url_to_file(data_url, filename)
-            filenames.append(filename)
-
-            print(f"Saved: {filename}")
-            
-        except Exception as e:
-            print(f"❌ FAILED to generate slide {idx}: {e}", file=sys.stderr)
-
-
-    print("\nDone. Generated files in {OUTPUT_DIR}:")
+    print(f"\n✅ All {len(filenames)} slides generated successfully!")
+    print("\nGenerated files:")
     for f in filenames:
         print(f"- {f}")
 

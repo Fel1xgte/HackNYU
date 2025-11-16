@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "project_id": "video_project",
-  "created_at": "2025-11-16T05:28:10Z",
+  "created_at": "2025-11-16T06:20:44Z",
   "video": {
     "video_id": "vid_0001",
     "path": "/Users/krutinrahtod/Desktop/Desktop/WEB/webCodes/latestCodee/HackNYU/backend/workspace/input_video.mp4",
@@ -37,9 +37,11 @@
       "start_sec": 0.0,
       "end_sec": 2.0,
       "text": "Hello!",
-      "confidence": -0.20794513148646201,
+      "confidence": 0.8122516025273473,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.20794513148646201
+      }
     },
     {
       "segment_id": "seg_0002",
@@ -47,9 +49,11 @@
       "start_sec": 2.0,
       "end_sec": 10.0,
       "text": "Welcome to this course IC Design Process, a beginner's overview to VLSI technology.",
-      "confidence": -0.20794513148646201,
+      "confidence": 0.8122516025273473,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.20794513148646201
+      }
     },
     {
       "segment_id": "seg_0003",
@@ -57,9 +61,11 @@
       "start_sec": 10.0,
       "end_sec": 14.0,
       "text": "This course is presented by System Veralog Academy.",
-      "confidence": -0.20794513148646201,
+      "confidence": 0.8122516025273473,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.20794513148646201
+      }
     },
     {
       "segment_id": "seg_0004",
@@ -67,9 +73,11 @@
       "start_sec": 14.0,
       "end_sec": 22.0,
       "text": "It is an online platform to learn System Veralog hardware description language for both design and verification coding.",
-      "confidence": -0.20794513148646201,
+      "confidence": 0.8122516025273473,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.20794513148646201
+      }
     },
     {
       "segment_id": "seg_0005",
@@ -77,9 +85,11 @@
       "start_sec": 22.0,
       "end_sec": 34.0,
       "text": "Visit us at SystemVeralogAcademy.com for in-depth system-verilog trainings in all levels of expertness, beginner, intermediate or advanced.",
-      "confidence": -0.14372654202618176,
+      "confidence": 0.8661245643465186,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.14372654202618176
+      }
     },
     {
       "segment_id": "seg_0006",
@@ -87,9 +97,11 @@
       "start_sec": 34.0,
       "end_sec": 37.0,
       "text": "This is a beginner-level course.",
-      "confidence": -0.14372654202618176,
+      "confidence": 0.8661245643465186,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.14372654202618176
+      }
     },
     {
       "segment_id": "seg_0007",
@@ -97,9 +109,11 @@
       "start_sec": 37.0,
       "end_sec": 46.0,
       "text": "When anybody start learning a hardware description language such as System Veralog or VHDL, the most common problem they could face is,",
-      "confidence": -0.14372654202618176,
+      "confidence": 0.8661245643465186,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.14372654202618176
+      }
     },
     {
       "segment_id": "seg_0008",
@@ -107,9 +121,11 @@
       "start_sec": 46.0,
       "end_sec": 53.0,
       "text": "in connecting what they write in their program to the actual circuit that get produced in the silicon.",
-      "confidence": -0.07311646143595378,
+      "confidence": 0.929492573682231,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.07311646143595378
+      }
     },
     {
       "segment_id": "seg_0009",
@@ -117,9 +133,11 @@
       "start_sec": 53.0,
       "end_sec": 56.0,
       "text": "This is a course designed to simplify this problem.",
-      "confidence": -0.07311646143595378,
+      "confidence": 0.929492573682231,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.07311646143595378
+      }
     },
     {
       "segment_id": "seg_0010",
@@ -127,9 +145,11 @@
       "start_sec": 56.0,
       "end_sec": 68.0,
       "text": "By connecting together the pieces of information scattered throughout RTL design, functional verification, synthesis, physical design, and manufacturing in VLSI technology.",
-      "confidence": -0.07311646143595378,
+      "confidence": 0.929492573682231,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.07311646143595378
+      }
     },
     {
       "segment_id": "seg_0011",
@@ -137,9 +157,11 @@
       "start_sec": 69.0,
       "end_sec": 78.0,
       "text": "This is not teaching any specific hardware description language or anything related to coding in an HDL.",
-      "confidence": -0.06269553009892853,
+      "confidence": 0.939229397241028,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.06269553009892853
+      }
     },
     {
       "segment_id": "seg_0012",
@@ -147,9 +169,11 @@
       "start_sec": 78.0,
       "end_sec": 81.0,
       "text": "Course Overview",
-      "confidence": -0.06269553009892853,
+      "confidence": 0.939229397241028,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.06269553009892853
+      }
     },
     {
       "segment_id": "seg_0013",
@@ -157,9 +181,11 @@
       "start_sec": 81.0,
       "end_sec": 91.0,
       "text": "As this course is teaching more theory than coding practices, it is designed to be a short one and gives only the overview of every process.",
-      "confidence": -0.06269553009892853,
+      "confidence": 0.939229397241028,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.06269553009892853
+      }
     },
     {
       "segment_id": "seg_0014",
@@ -167,9 +193,11 @@
       "start_sec": 91.0,
       "end_sec": 95.0,
       "text": "The first session explains a short history of ICs.",
-      "confidence": -0.06269553009892853,
+      "confidence": 0.939229397241028,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.06269553009892853
+      }
     },
     {
       "segment_id": "seg_0015",
@@ -177,9 +205,11 @@
       "start_sec": 95.0,
       "end_sec": 100.0,
       "text": "Second session refreshes few fundamentals of digital circuits.",
-      "confidence": -0.07087451372391139,
+      "confidence": 0.931578785145835,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.07087451372391139
+      }
     },
     {
       "segment_id": "seg_0016",
@@ -187,9 +217,11 @@
       "start_sec": 100.0,
       "end_sec": 105.0,
       "text": "Third session describes the idea of hardware description language.",
-      "confidence": -0.07087451372391139,
+      "confidence": 0.931578785145835,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.07087451372391139
+      }
     },
     {
       "segment_id": "seg_0017",
@@ -197,9 +229,11 @@
       "start_sec": 105.0,
       "end_sec": 111.0,
       "text": "Fourth session gives the overview of every steps involved in the design process of an IC.",
-      "confidence": -0.07087451372391139,
+      "confidence": 0.931578785145835,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.07087451372391139
+      }
     },
     {
       "segment_id": "seg_0018",
@@ -207,9 +241,11 @@
       "start_sec": 111.0,
       "end_sec": 116.0,
       "text": "It is broadly classified as front end and back end design processes.",
-      "confidence": -0.07087451372391139,
+      "confidence": 0.931578785145835,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.07087451372391139
+      }
     },
     {
       "segment_id": "seg_0019",
@@ -217,9 +253,11 @@
       "start_sec": 116.0,
       "end_sec": 124.0,
       "text": "Fifth session briefs the IC manufacturing process and the final session summaries the course.",
-      "confidence": -0.07087451372391139,
+      "confidence": 0.931578785145835,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.07087451372391139
+      }
     },
     {
       "segment_id": "seg_0020",
@@ -227,9 +265,11 @@
       "start_sec": 126.0,
       "end_sec": 132.0,
       "text": "History of ICs",
-      "confidence": -0.11197053194046021,
+      "confidence": 0.8940706036379513,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.11197053194046021
+      }
     },
     {
       "segment_id": "seg_0021",
@@ -237,9 +277,11 @@
       "start_sec": 132.0,
       "end_sec": 144.0,
       "text": "An integrated circuit or IC is a device with a large number of electronic circuits built into a tiny plate of semiconductor material, which will be usually silicon.",
-      "confidence": -0.11197053194046021,
+      "confidence": 0.8940706036379513,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.11197053194046021
+      }
     },
     {
       "segment_id": "seg_0022",
@@ -247,9 +289,11 @@
       "start_sec": 145.0,
       "end_sec": 160.0,
       "text": "An SOC or system on chip is an IC with all components of a complete electronic system built into a single silicon plate, or simply an SOC is a device with multiple ICs built in a single chip.",
-      "confidence": -0.053052704508711655,
+      "confidence": 0.9483300298968337,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.053052704508711655
+      }
     },
     {
       "segment_id": "seg_0023",
@@ -257,9 +301,11 @@
       "start_sec": 160.0,
       "end_sec": 171.0,
       "text": "Even though the actual silicon in an IC is a tiny metal piece, they could be built with up to several billions of transistors and other electronic components in it.",
-      "confidence": -0.053052704508711655,
+      "confidence": 0.9483300298968337,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.053052704508711655
+      }
     },
     {
       "segment_id": "seg_0024",
@@ -267,9 +313,11 @@
       "start_sec": 172.0,
       "end_sec": 177.0,
       "text": "As you know, there are two categories of electronic circuits, analog and digital.",
-      "confidence": -0.06282618883493785,
+      "confidence": 0.9391066867319363,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.06282618883493785
+      }
     },
     {
       "segment_id": "seg_0025",
@@ -277,9 +325,11 @@
       "start_sec": 177.0,
       "end_sec": 185.0,
       "text": "In the same manner, ICs can also be analog or digital based on the number of operational voltage levels in them.",
-      "confidence": -0.06282618883493785,
+      "confidence": 0.9391066867319363,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.06282618883493785
+      }
     },
     {
       "segment_id": "seg_0026",
@@ -287,9 +337,11 @@
       "start_sec": 185.0,
       "end_sec": 195.0,
       "text": "Designed process of analog and digital ICs are not very similar, but the manufacturing process for both of them are almost similar.",
-      "confidence": -0.06282618883493785,
+      "confidence": 0.9391066867319363,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.06282618883493785
+      }
     },
     {
       "segment_id": "seg_0027",
@@ -297,9 +349,11 @@
       "start_sec": 196.0,
       "end_sec": 205.0,
       "text": "Usually, HDLs are used to design digital ICs, and this course is explaining the process on the grounds of a digital IC.",
-      "confidence": -0.09167576480556179,
+      "confidence": 0.9124009340848889,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.09167576480556179
+      }
     },
     {
       "segment_id": "seg_0028",
@@ -307,9 +361,11 @@
       "start_sec": 208.0,
       "end_sec": 213.0,
       "text": "Every digital circuit is made of switches that turn on and turn off the voltage.",
-      "confidence": -0.09167576480556179,
+      "confidence": 0.9124009340848889,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.09167576480556179
+      }
     },
     {
       "segment_id": "seg_0029",
@@ -317,9 +373,11 @@
       "start_sec": 213.0,
       "end_sec": 222.0,
       "text": "Before the invention of BJT, the bipolar junction transistor, circuits were using vacuum tubes as these digital switches.",
-      "confidence": -0.09167576480556179,
+      "confidence": 0.9124009340848889,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.09167576480556179
+      }
     },
     {
       "segment_id": "seg_0030",
@@ -327,9 +385,11 @@
       "start_sec": 223.0,
       "end_sec": 230.0,
       "text": "You can imagine how bulky was even a simple laboratory circuit that used vacuum tubes instead of transistors.",
-      "confidence": -0.07382900988469358,
+      "confidence": 0.9288305010981476,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.07382900988469358
+      }
     },
     {
       "segment_id": "seg_0031",
@@ -337,9 +397,11 @@
       "start_sec": 231.0,
       "end_sec": 243.0,
       "text": "With the invention of transistors in 1947 at Bell Laboratories, vacuum tubes were replaced by the small silicon devices, but still the whole circuit was made of discrete transistors.",
-      "confidence": -0.07382900988469358,
+      "confidence": 0.9288305010981476,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.07382900988469358
+      }
     },
     {
       "segment_id": "seg_0032",
@@ -347,9 +409,11 @@
       "start_sec": 244.0,
       "end_sec": 257.0,
       "text": "Eventually, the idea came up that proposed to build all transistors and other components in a whole electronic circuit into a single silicon piece, instead of manufacturing them separately and assembling.",
-      "confidence": -0.06938096455165318,
+      "confidence": 0.9329711834180924,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.06938096455165318
+      }
     },
     {
       "segment_id": "seg_0033",
@@ -357,9 +421,11 @@
       "start_sec": 257.0,
       "end_sec": 270.0,
       "text": "This was nothing but what we call as an integrated circuit, and from there, IC technology evolution started and made it possible to build up to billions of components into a single wafer.",
-      "confidence": -0.06938096455165318,
+      "confidence": 0.9329711834180924,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.06938096455165318
+      }
     },
     {
       "segment_id": "seg_0034",
@@ -367,9 +433,11 @@
       "start_sec": 274.0,
       "end_sec": 275.0,
       "text": "VLSI",
-      "confidence": -0.0933430765716123,
+      "confidence": 0.910880944772288,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.0933430765716123
+      }
     },
     {
       "segment_id": "seg_0035",
@@ -377,9 +445,11 @@
       "start_sec": 277.0,
       "end_sec": 291.0,
       "text": "The first integrated circuits build only a few devices in them. Perhaps as many as 10 diodes, transistors, resistors, and capacitors, making it possible to fabricate one or two logic gates on a single IC.",
-      "confidence": -0.0933430765716123,
+      "confidence": 0.910880944772288,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.0933430765716123
+      }
     },
     {
       "segment_id": "seg_0036",
@@ -387,9 +457,11 @@
       "start_sec": 291.0,
       "end_sec": 296.0,
       "text": "This number started to increase slowly and got up to billion in 2008.",
-      "confidence": -0.0933430765716123,
+      "confidence": 0.910880944772288,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.0933430765716123
+      }
     },
     {
       "segment_id": "seg_0037",
@@ -397,9 +469,11 @@
       "start_sec": 297.0,
       "end_sec": 307.0,
       "text": "Based on the number of transistors made into a single chip, the manufacturing technologies were known by different names in the industry, like SSI or LSI.",
-      "confidence": -0.07205499427905981,
+      "confidence": 0.9304797233425571,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.07205499427905981
+      }
     },
     {
       "segment_id": "seg_0038",
@@ -407,9 +481,11 @@
       "start_sec": 308.0,
       "end_sec": 318.0,
       "text": "Early in the 1960s, hundreds of transistors were built into a single chip, and technology was commonly known as SSI or small-scale integration.",
-      "confidence": -0.07205499427905981,
+      "confidence": 0.9304797233425571,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.07205499427905981
+      }
     },
     {
       "segment_id": "seg_0039",
@@ -417,9 +493,11 @@
       "start_sec": 319.0,
       "end_sec": 327.0,
       "text": "It went up to thousands of transistors in late 1960s, which was known as medium-scale integration, MSI.",
-      "confidence": -0.08249025829767777,
+      "confidence": 0.9208204081714201,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.08249025829767777
+      }
     },
     {
       "segment_id": "seg_0040",
@@ -427,9 +505,11 @@
       "start_sec": 327.0,
       "end_sec": 337.0,
       "text": "In 70s, it increased to tens of thousands of transistors, and the technology was known as large-scale integration or LSI.",
-      "confidence": -0.08249025829767777,
+      "confidence": 0.9208204081714201,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.08249025829767777
+      }
     },
     {
       "segment_id": "seg_0041",
@@ -437,9 +517,11 @@
       "start_sec": 338.0,
       "end_sec": 350.0,
       "text": "Eventually, the number of transistors in a single chip increased to hundreds of thousands of transistors in 1980s, millions in late 90s, and to billions in 2008.",
-      "confidence": -0.05535620764682168,
+      "confidence": 0.9461480627459082,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.05535620764682168
+      }
     },
     {
       "segment_id": "seg_0042",
@@ -447,9 +529,11 @@
       "start_sec": 351.0,
       "end_sec": 363.0,
       "text": "Nowadays, irrespective of the number of transistors in the chip, all IC manufacturing technologies are called by the same name, VLSI or very large-scale integration.",
-      "confidence": -0.05535620764682168,
+      "confidence": 0.9461480627459082,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.05535620764682168
+      }
     },
     {
       "segment_id": "seg_0043",
@@ -457,9 +541,11 @@
       "start_sec": 368.0,
       "end_sec": 372.0,
       "text": "Fundamentals of digital circuits",
-      "confidence": -0.08314659144427325,
+      "confidence": 0.9202162415044686,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.08314659144427325
+      }
     },
     {
       "segment_id": "seg_0044",
@@ -467,9 +553,11 @@
       "start_sec": 372.0,
       "end_sec": 380.0,
       "text": "Before you start designing digital ICs, there are a few fundamentals of digital circuits that need to be refreshed.",
-      "confidence": -0.08314659144427325,
+      "confidence": 0.9202162415044686,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.08314659144427325
+      }
     },
     {
       "segment_id": "seg_0045",
@@ -477,9 +565,11 @@
       "start_sec": 381.0,
       "end_sec": 396.0,
       "text": "In digital circuits, all real-world entities that is the data will be converted to binary numbers using mathematical formulas as a one can be represented with a positive voltage and a zero with negative voltage.",
-      "confidence": -0.08314659144427325,
+      "confidence": 0.9202162415044686,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.08314659144427325
+      }
     },
     {
       "segment_id": "seg_0046",
@@ -487,9 +577,11 @@
       "start_sec": 397.0,
       "end_sec": 406.0,
       "text": "The only requirement to process this binary data in the circuit is to switch on and switch off the voltage in the circuit.",
-      "confidence": -0.09746180640326606,
+      "confidence": 0.9071369877184581,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.09746180640326606
+      }
     },
     {
       "segment_id": "seg_0047",
@@ -497,9 +589,11 @@
       "start_sec": 406.0,
       "end_sec": 412.0,
       "text": "Thus, we can say that switches are the basic building blocks of any digital circuit.",
-      "confidence": -0.09746180640326606,
+      "confidence": 0.9071369877184581,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.09746180640326606
+      }
     },
     {
       "segment_id": "seg_0048",
@@ -507,9 +601,11 @@
       "start_sec": 412.0,
       "end_sec": 418.0,
       "text": "Normally, transistor and CMO's devices are used as these switches.",
-      "confidence": -0.09746180640326606,
+      "confidence": 0.9071369877184581,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.09746180640326606
+      }
     },
     {
       "segment_id": "seg_0049",
@@ -517,9 +613,11 @@
       "start_sec": 419.0,
       "end_sec": 425.0,
       "text": "There are two types of digital circuits, sequential and combinational circuits.",
-      "confidence": -0.10839353417450527,
+      "confidence": 0.8972744187935534,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.10839353417450527
+      }
     },
     {
       "segment_id": "seg_0050",
@@ -527,9 +625,11 @@
       "start_sec": 427.0,
       "end_sec": 438.0,
       "text": "A digital circuit whose output depends not only on the present value of its inputs, but on the sequence of past inputs or the input history is called a sequential circuit.",
-      "confidence": -0.10839353417450527,
+      "confidence": 0.8972744187935534,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.10839353417450527
+      }
     },
     {
       "segment_id": "seg_0051",
@@ -537,9 +637,11 @@
       "start_sec": 439.0,
       "end_sec": 448.0,
       "text": "On the other hand, a circuit whose output is a pure function of only its current inputs is called a combinational circuit.",
-      "confidence": -0.07087372144063314,
+      "confidence": 0.9315795232204213,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.07087372144063314
+      }
     },
     {
       "segment_id": "seg_0052",
@@ -547,9 +649,11 @@
       "start_sec": 448.0,
       "end_sec": 459.0,
       "text": "In simple words, a digital circuit with a memory storage element in it will be a sequential circuit and without memory will be a combinational circuit.",
-      "confidence": -0.07087372144063314,
+      "confidence": 0.9315795232204213,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.07087372144063314
+      }
     },
     {
       "segment_id": "seg_0053",
@@ -557,9 +661,11 @@
       "start_sec": 460.0,
       "end_sec": 473.0,
       "text": "Once you have written the state of any digital circuit and simplified using the mathematical formulas, there will be only two types of components in it, which are the logic gates and flip flops.",
-      "confidence": -0.09950427311222727,
+      "confidence": 0.905286081471219,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.09950427311222727
+      }
     },
     {
       "segment_id": "seg_0054",
@@ -567,9 +673,11 @@
       "start_sec": 473.0,
       "end_sec": 480.0,
       "text": "As you know, there are only seven logic gates whose symbolic representation is shown here.",
-      "confidence": -0.09950427311222727,
+      "confidence": 0.905286081471219,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.09950427311222727
+      }
     },
     {
       "segment_id": "seg_0055",
@@ -577,9 +685,11 @@
       "start_sec": 480.0,
       "end_sec": 488.0,
       "text": "They are the AND or XOR, NOT, NAND, NOR and XNOR gates.",
-      "confidence": -0.09950427311222727,
+      "confidence": 0.905286081471219,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.09950427311222727
+      }
     },
     {
       "segment_id": "seg_0056",
@@ -587,9 +697,11 @@
       "start_sec": 489.0,
       "end_sec": 498.0,
       "text": "A flip flop is the memory storage element which can store a single bit input data in it for the duration of a clock signal.",
-      "confidence": -0.11465744972229004,
+      "confidence": 0.8916715339297002,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.11465744972229004
+      }
     },
     {
       "segment_id": "seg_0057",
@@ -597,9 +709,11 @@
       "start_sec": 498.0,
       "end_sec": 506.0,
       "text": "All types of flip flops like D-flops, JK-flops, latches, etc are again made of logic gates.",
-      "confidence": -0.11465744972229004,
+      "confidence": 0.8916715339297002,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.11465744972229004
+      }
     },
     {
       "segment_id": "seg_0058",
@@ -607,9 +721,11 @@
       "start_sec": 506.0,
       "end_sec": 514.0,
       "text": "As an example, this figure shows a D-flip flop made using logic gates.",
-      "confidence": -0.11465744972229004,
+      "confidence": 0.8916715339297002,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.11465744972229004
+      }
     },
     {
       "segment_id": "seg_0059",
@@ -617,9 +733,11 @@
       "start_sec": 515.0,
       "end_sec": 523.0,
       "text": "Thus, we can say that every digital circuit is made of only logic gates.",
-      "confidence": -0.1123913795717301,
+      "confidence": 0.8936944153067586,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.1123913795717301
+      }
     },
     {
       "segment_id": "seg_0060",
@@ -627,9 +745,11 @@
       "start_sec": 526.0,
       "end_sec": 534.0,
       "text": "This breakdown will further go down into transistors as all logic gates can be made with only transistors.",
-      "confidence": -0.1123913795717301,
+      "confidence": 0.8936944153067586,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.1123913795717301
+      }
     },
     {
       "segment_id": "seg_0061",
@@ -637,9 +757,11 @@
       "start_sec": 534.0,
       "end_sec": 541.0,
       "text": "Here is a diagram representing a NAND gate and NOR gate using CMOS transistors.",
-      "confidence": -0.1123913795717301,
+      "confidence": 0.8936944153067586,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.1123913795717301
+      }
     },
     {
       "segment_id": "seg_0062",
@@ -647,9 +769,11 @@
       "start_sec": 545.0,
       "end_sec": 554.0,
       "text": "Thus, every digital circuit is made of gates and flops. Flops are made of gates, and all gates are made using transistor.",
-      "confidence": -0.12285380643956802,
+      "confidence": 0.8843929456639595,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.12285380643956802
+      }
     },
     {
       "segment_id": "seg_0063",
@@ -657,9 +781,11 @@
       "start_sec": 554.0,
       "end_sec": 562.0,
       "text": "This concludes that every digital circuit is made of only with a large number of transistors.",
-      "confidence": -0.12285380643956802,
+      "confidence": 0.8843929456639595,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.12285380643956802
+      }
     },
     {
       "segment_id": "seg_0064",
@@ -667,9 +793,11 @@
       "start_sec": 562.0,
       "end_sec": 573.0,
       "text": "To simplify the design process, our aim is to model the complex digital circuits in an abstract way, which hides details of its transistor level circuit diodes.",
-      "confidence": -0.12285380643956802,
+      "confidence": 0.8843929456639595,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.12285380643956802
+      }
     },
     {
       "segment_id": "seg_0065",
@@ -677,9 +805,11 @@
       "start_sec": 573.0,
       "end_sec": 580.0,
       "text": "This is the whole purpose of using a hardware description language in IC design.",
-      "confidence": -0.12535683949788412,
+      "confidence": 0.8821820490124291,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.12535683949788412
+      }
     },
     {
       "segment_id": "seg_0066",
@@ -687,9 +817,11 @@
       "start_sec": 580.0,
       "end_sec": 585.0,
       "text": "Hardware description language.",
-      "confidence": -0.12535683949788412,
+      "confidence": 0.8821820490124291,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.12535683949788412
+      }
     },
     {
       "segment_id": "seg_0067",
@@ -697,129 +829,227 @@
       "start_sec": 585.0,
       "end_sec": 600.0,
       "text": "As you learned in the previous session, in early 60s itself, the number of transistors in a digital circuit have gone beyond the point where it was possible to draw a transistor level circuit and make a mask for the fabrication process.",
-      "confidence": -0.12535683949788412,
+      "confidence": 0.8821820490124291,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.12535683949788412
+      }
     },
     {
       "segment_id": "seg_0068",
       "index": 67,
       "start_sec": 600.0,
-      "end_sec": 622.0,
-      "text": "Thus, it became essential to describe the circuit behavior in a high level manner, which is independent of any library or technology that is used in the manufacturing process of the IC, and uses EDA tools to convert the written program to a mask diagram used in the fabrication process.",
-      "confidence": -0.13929299176749538,
+      "end_sec": 627.0,
+      "text": "Thus it became essential to describe the circuit behavior in a high level manner, which is independent of any library or technology that is used in the manufacturing process of the IC and uses EDA tools to convert the written program to a mask diagram used in the fabrication process.",
+      "confidence": 0.8332458410686474,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.1824265530234889
+      }
     },
     {
       "segment_id": "seg_0069",
       "index": 68,
-      "start_sec": 622.0,
+      "start_sec": 627.0,
       "end_sec": 634.0,
       "text": "This programming language is called as a hardware description language or an HDL.",
-      "confidence": -0.13784052266014946,
+      "confidence": 0.8554190102036776,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.15616385967700513
+      }
     },
     {
       "segment_id": "seg_0070",
       "index": 69,
       "start_sec": 634.0,
-      "end_sec": 649.0,
-      "text": "A few years ago, Verilog and VHDL were the most common HDLs in the industry, and nowadays, system Verilog, which is an extension of Verilog, is the widely accepted language by most of the semiconductor companies.",
-      "confidence": -0.13784052266014946,
+      "end_sec": 641.0,
+      "text": "A few years ago, Verilog and VHDL were the most common HDLs in the industry,",
+      "confidence": 0.8554190102036776,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.15616385967700513
+      }
     },
     {
       "segment_id": "seg_0071",
       "index": 70,
-      "start_sec": 653.0,
-      "end_sec": 665.0,
-      "text": "Verilog language. Verilog was developed by the company Gateway Design in 1984, which was later acquired by Cadence Design Systems.",
-      "confidence": -0.10615808455670467,
+      "start_sec": 641.0,
+      "end_sec": 645.0,
+      "text": "and nowadays, System Verilog, which is an extension of Verilog,",
+      "confidence": 0.8554190102036776,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.15616385967700513
+      }
     },
     {
       "segment_id": "seg_0072",
       "index": 71,
-      "start_sec": 665.0,
-      "end_sec": 677.0,
-      "text": "It got its name from the words verification and logic, and became an IEEE standard in 1995 as IEEE 1364.",
-      "confidence": -0.10615808455670467,
+      "start_sec": 645.0,
+      "end_sec": 650.0,
+      "text": "is the widely accepted language by most of the semiconductor companies.",
+      "confidence": 0.8554190102036776,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.15616385967700513
+      }
     },
     {
       "segment_id": "seg_0073",
       "index": 72,
-      "start_sec": 677.0,
-      "end_sec": 686.0,
-      "text": "The Verilog HDL is now maintained by a non-profitable organization called Accelera.",
-      "confidence": -0.10336467547294421,
+      "start_sec": 650.0,
+      "end_sec": 661.0,
+      "text": "Verilog language. Verilog was developed by the company Gateway Design in 1984,",
+      "confidence": 0.8463705196608984,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.1667980487530048
+      }
     },
     {
       "segment_id": "seg_0074",
       "index": 73,
-      "start_sec": 686.0,
-      "end_sec": 695.0,
-      "text": "System Verilog HDL. System Verilog is an extension of Verilog and was developed by Accelera as a new standard.",
-      "confidence": -0.10336467547294421,
+      "start_sec": 661.0,
+      "end_sec": 665.0,
+      "text": "which was later acquired by Cadence Design Systems.",
+      "confidence": 0.8463705196608984,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.1667980487530048
+      }
     },
     {
       "segment_id": "seg_0075",
       "index": 74,
-      "start_sec": 695.0,
-      "end_sec": 704.0,
-      "text": "It became an IEEE standard in 2005, which is IEEE 1800 to 2005.",
-      "confidence": -0.10336467547294421,
+      "start_sec": 665.0,
+      "end_sec": 670.0,
+      "text": "It got its name from the words verification and logic,",
+      "confidence": 0.8463705196608984,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.1667980487530048
+      }
     },
     {
       "segment_id": "seg_0076",
       "index": 75,
-      "start_sec": 704.0,
-      "end_sec": 713.0,
-      "text": "Compared to Verilog, System Verilog added a lot of features to support functional verification of the IC.",
-      "confidence": -0.05565354595445607,
+      "start_sec": 670.0,
+      "end_sec": 677.0,
+      "text": "and became an IEEE standard in 1995 as IEEE 1364.",
+      "confidence": 0.8463705196608984,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.1667980487530048
+      }
     },
     {
       "segment_id": "seg_0077",
       "index": 76,
-      "start_sec": 713.0,
-      "end_sec": 727.0,
-      "text": "Out of these, support for object-oriented programming was a significant add-on, which helped it to become the most preferred HDL in the industry, as it can be used for both design as well as verification.",
-      "confidence": -0.05565354595445607,
+      "start_sec": 677.0,
+      "end_sec": 686.0,
+      "text": "The Verilog HDL is now maintained by a non-profitable organization called Accelera.",
+      "confidence": 0.9035752141421528,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.1013959248860677
+      }
     },
     {
       "segment_id": "seg_0078",
       "index": 77,
-      "start_sec": 728.0,
-      "end_sec": 735.0,
-      "text": "When you write a design code in Verilog and System Verilog, they look almost the same.",
-      "confidence": -0.06762830569193913,
+      "start_sec": 686.0,
+      "end_sec": 695.0,
+      "text": "System Verilog HDL. System Verilog is an extension of Verilog and was developed by Accelera as a new standard.",
+      "confidence": 0.9035752141421528,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.1013959248860677
+      }
     },
     {
       "segment_id": "seg_0079",
       "index": 78,
+      "start_sec": 695.0,
+      "end_sec": 704.0,
+      "text": "It became an IEEE standard in 2005, which is IEEE 1800 to 2005.",
+      "confidence": 0.9035752141421528,
+      "speaker": null,
+      "metadata": {
+        "raw_logprob": -0.1013959248860677
+      }
+    },
+    {
+      "segment_id": "seg_0080",
+      "index": 79,
+      "start_sec": 704.0,
+      "end_sec": 713.0,
+      "text": "Compared to Verilog, System Verilog added a lot of features to support functional verification of the IC.",
+      "confidence": 0.9412566707187924,
+      "speaker": null,
+      "metadata": {
+        "raw_logprob": -0.060539412808108636
+      }
+    },
+    {
+      "segment_id": "seg_0081",
+      "index": 80,
+      "start_sec": 713.0,
+      "end_sec": 719.0,
+      "text": "Out of these, support for object-oriented programming was a significant add-on,",
+      "confidence": 0.9412566707187924,
+      "speaker": null,
+      "metadata": {
+        "raw_logprob": -0.060539412808108636
+      }
+    },
+    {
+      "segment_id": "seg_0082",
+      "index": 81,
+      "start_sec": 719.0,
+      "end_sec": 723.0,
+      "text": "which helped it to become the most preferred HDL in the industry,",
+      "confidence": 0.9412566707187924,
+      "speaker": null,
+      "metadata": {
+        "raw_logprob": -0.060539412808108636
+      }
+    },
+    {
+      "segment_id": "seg_0083",
+      "index": 82,
+      "start_sec": 723.0,
+      "end_sec": 728.0,
+      "text": "as it can be used for both design as well as verification.",
+      "confidence": 0.9412566707187924,
+      "speaker": null,
+      "metadata": {
+        "raw_logprob": -0.060539412808108636
+      }
+    },
+    {
+      "segment_id": "seg_0084",
+      "index": 83,
+      "start_sec": 728.0,
+      "end_sec": 735.0,
+      "text": "When you write a design code in Verilog and System Verilog, they look almost the same.",
+      "confidence": 0.9351282839259213,
+      "speaker": null,
+      "metadata": {
+        "raw_logprob": -0.06707155704498291
+      }
+    },
+    {
+      "segment_id": "seg_0085",
+      "index": 84,
       "start_sec": 735.0,
       "end_sec": 744.0,
       "text": "But, in case of a test bench or verification code, System Verilog is much more advanced than Verilog.",
-      "confidence": -0.06762830569193913,
+      "confidence": 0.9351282839259213,
       "speaker": null,
-      "metadata": {}
+      "metadata": {
+        "raw_logprob": -0.06707155704498291
+      }
     }
   ],
   "visual_keyframes": [
@@ -837,9 +1067,9 @@
       "frame_id": "frame_0002",
       "time_sec": 10.0,
       "image_path": "/Users/krutinrahtod/Desktop/Desktop/WEB/webCodes/latestCodee/HackNYU/backend/workspace/frames/frame_0002.png",
-      "kind": "slide",
+      "kind": "unknown",
       "caption": "",
-      "ocr_text": "IC Design Process:\nA Beginner's Overview to VLSI Technology\n\nSystemverilog Academy\nwww.SystemverilogAcademy.com",
+      "ocr_text": "[DUPLICATE_OF_PREVIOUS] IC Design Process:\nA Beginner's Overview to VLSI T...",
       "tags": [],
       "metadata": {}
     },
@@ -847,9 +1077,9 @@
       "frame_id": "frame_0003",
       "time_sec": 20.0,
       "image_path": "/Users/krutinrahtod/Desktop/Desktop/WEB/webCodes/latestCodee/HackNYU/backend/workspace/frames/frame_0003.png",
-      "kind": "slide",
+      "kind": "unknown",
       "caption": "",
-      "ocr_text": "IC Design Process:\nA Beginner's Overview to VLSI Technology\n\nSystemverilog Academy\nwww.SystemverilogAcademy.com",
+      "ocr_text": "[DUPLICATE_OF_PREVIOUS] IC Design Process:\nA Beginner's Overview to VLSI T...",
       "tags": [],
       "metadata": {}
     },
@@ -857,9 +1087,9 @@
       "frame_id": "frame_0004",
       "time_sec": 30.0,
       "image_path": "/Users/krutinrahtod/Desktop/Desktop/WEB/webCodes/latestCodee/HackNYU/backend/workspace/frames/frame_0004.png",
-      "kind": "slide",
+      "kind": "unknown",
       "caption": "",
-      "ocr_text": "IC Design Process:\nA Beginner's Overview to VLSI Technology\n\nSystemverilog Academy\nwww.SystemverilogAcademy.com",
+      "ocr_text": "[DUPLICATE_OF_PREVIOUS] IC Design Process:\nA Beginner's Overview to VLSI T...",
       "tags": [],
       "metadata": {}
     },
@@ -877,9 +1107,9 @@
       "frame_id": "frame_0006",
       "time_sec": 50.0,
       "image_path": "/Users/krutinrahtod/Desktop/Desktop/WEB/webCodes/latestCodee/HackNYU/backend/workspace/frames/frame_0006.png",
-      "kind": "slide",
+      "kind": "unknown",
       "caption": "",
-      "ocr_text": "IC Design Process:\nA Beginner's Overview to VLSI Technology\n\nWelcome\n\nSystemverilog Academy\nwww.SystemverilogAcademy.com",
+      "ocr_text": "[DUPLICATE_OF_PREVIOUS] IC Design Process:\nA Beginner's Overview to VLSI T...",
       "tags": [],
       "metadata": {}
     },
@@ -887,9 +1117,9 @@
       "frame_id": "frame_0007",
       "time_sec": 60.0,
       "image_path": "/Users/krutinrahtod/Desktop/Desktop/WEB/webCodes/latestCodee/HackNYU/backend/workspace/frames/frame_0007.png",
-      "kind": "slide",
+      "kind": "unknown",
       "caption": "",
-      "ocr_text": "IC Design Process:\nA Beginner's Overview to VLSI Technology\n\nWelcome\n\nSystemverilog Academy\nwww.SystemverilogAcademy.com",
+      "ocr_text": "[DUPLICATE_OF_PREVIOUS] IC Design Process:\nA Beginner's Overview to VLSI T...",
       "tags": [],
       "metadata": {}
     },
@@ -897,9 +1127,9 @@
       "frame_id": "frame_0008",
       "time_sec": 70.0,
       "image_path": "/Users/krutinrahtod/Desktop/Desktop/WEB/webCodes/latestCodee/HackNYU/backend/workspace/frames/frame_0008.png",
-      "kind": "slide",
+      "kind": "unknown",
       "caption": "",
-      "ocr_text": "IC Design Process:\nA Beginner's Overview to VLSI Technology\n\nWelcome\n\nSystemverilog Academy\nwww.SystemverilogAcademy.com",
+      "ocr_text": "[DUPLICATE_OF_PREVIOUS] IC Design Process:\nA Beginner's Overview to VLSI T...",
       "tags": [],
       "metadata": {}
     },
@@ -977,9 +1207,9 @@
       "frame_id": "frame_0016",
       "time_sec": 150.0,
       "image_path": "/Users/krutinrahtod/Desktop/Desktop/WEB/webCodes/latestCodee/HackNYU/backend/workspace/frames/frame_0016.png",
-      "kind": "slide",
+      "kind": "unknown",
       "caption": "",
-      "ocr_text": "Integrated Circuits\n\nIntegrated Circuit\n\nSystem On Chip - SoC: Multiple ICs integrated together\n\nUp to several billion transistors in an area of the size of a fingernail.\nDigital and Analog ICs\n\nSystemverilog Academy\nwww.SystemverilogAcademy .com",
+      "ocr_text": "[DUPLICATE_OF_PREVIOUS] Integrated Circuits\n\nIntegrated Circuit\n\nSystem On...",
       "tags": [],
       "metadata": {}
     },
@@ -987,9 +1217,9 @@
       "frame_id": "frame_0017",
       "time_sec": 160.0,
       "image_path": "/Users/krutinrahtod/Desktop/Desktop/WEB/webCodes/latestCodee/HackNYU/backend/workspace/frames/frame_0017.png",
-      "kind": "slide",
+      "kind": "unknown",
       "caption": "",
-      "ocr_text": "Integrated Circuits\n\nIntegrated Circuit\n\nSystem On Chip - SoC: Multiple ICs integrated together\n\nUp to several billion transistors in an area of the size of a fingernail.\nDigital and Analog ICs\n\nSystemverilog Academy\nwww.SystemverilogAcademy .com",
+      "ocr_text": "[DUPLICATE_OF_PREVIOUS] Integrated Circuits\n\nIntegrated Circuit\n\nSystem On...",
       "tags": [],
       "metadata": {}
     },
@@ -997,9 +1227,9 @@
       "frame_id": "frame_0018",
       "time_sec": 170.0,
       "image_path": "/Users/krutinrahtod/Desktop/Desktop/WEB/webCodes/latestCodee/HackNYU/backend/workspace/frames/frame_0018.png",
-      "kind": "slide",
+      "kind": "unknown",
       "caption": "",
-      "ocr_text": "Integrated Circuits\n\nIntegrated Circuit\n\nSystem On Chip - SoC: Multiple ICs integrated together\n\nUp to several billion transistors in an area of the size of a fingernail.\nDigital and Analog ICs\n\nSystemverilog Academy\nwww.SystemverilogAcademy .com",
+      "ocr_text": "[DUPLICATE_OF_PREVIOUS] Integrated Circuits\n\nIntegrated Circuit\n\nSystem On...",
       "tags": [],
       "metadata": {}
     },
@@ -1007,9 +1237,9 @@
       "frame_id": "frame_0019",
       "time_sec": 180.0,
       "image_path": "/Users/krutinrahtod/Desktop/Desktop/WEB/webCodes/latestCodee/HackNYU/backend/workspace/frames/frame_0019.png",
-      "kind": "slide",
+      "kind": "unknown",
       "caption": "",
-      "ocr_text": "Integrated Circuits\n\nIntegrated Circuit\n\nSystem On Chip - SoC: Multiple ICs integrated together\n\nUp to several billion transistors in an area of the size of a fingernail.\nDigital and Analog ICs\n\nSystemverilog Academy\nwww.SystemverilogAcademy .com",
+      "ocr_text": "[DUPLICATE_OF_PREVIOUS] Integrated Circuits\n\nIntegrated Circuit\n\nSystem On...",
       "tags": [],
       "metadata": {}
     },
@@ -1017,9 +1247,9 @@
       "frame_id": "frame_0020",
       "time_sec": 190.0,
       "image_path": "/Users/krutinrahtod/Desktop/Desktop/WEB/webCodes/latestCodee/HackNYU/backend/workspace/frames/frame_0020.png",
-      "kind": "slide",
+      "kind": "unknown",
       "caption": "",
-      "ocr_text": "Integrated Circuits\n\nIntegrated Circuit\n\nSystem On Chip - SoC: Multiple ICs integrated together\n\nUp to several billion transistors in an area of the size of a fingernail.\nDigital and Analog ICs\n\nSystemverilog Academy\nwww.SystemverilogAcademy .com",
+      "ocr_text": "[DUPLICATE_OF_PREVIOUS] Integrated Circuits\n\nIntegrated Circuit\n\nSystem On...",
       "tags": [],
       "metadata": {}
     },
@@ -1027,9 +1257,9 @@
       "frame_id": "frame_0021",
       "time_sec": 200.0,
       "image_path": "/Users/krutinrahtod/Desktop/Desktop/WEB/webCodes/latestCodee/HackNYU/backend/workspace/frames/frame_0021.png",
-      "kind": "slide",
+      "kind": "unknown",
       "caption": "",
-      "ocr_text": "Integrated Circuits\n\nIntegrated Circuit\n\nSystem On Chip - SoC: Multiple ICs integrated together\n\nUp to several billion transistors in an area of the size of a fingernail.\nDigital and Analog ICs\n\nSystemverilog Academy\nwww.SystemverilogAcademy .com",
+      "ocr_text": "[DUPLICATE_OF_PREVIOUS] Integrated Circuits\n\nIntegrated Circuit\n\nSystem On...",
       "tags": [],
       "metadata": {}
     },
@@ -1610,7 +1840,9 @@
       },
       {
         "segment_id": "seg_0006",
-        "frame_ids": []
+        "frame_ids": [
+          "frame_0005"
+        ]
       },
       {
         "segment_id": "seg_0007",
@@ -1626,7 +1858,9 @@
       },
       {
         "segment_id": "seg_0009",
-        "frame_ids": []
+        "frame_ids": [
+          "frame_0006"
+        ]
       },
       {
         "segment_id": "seg_0010",
@@ -1782,7 +2016,9 @@
       },
       {
         "segment_id": "seg_0034",
-        "frame_ids": []
+        "frame_ids": [
+          "frame_0028"
+        ]
       },
       {
         "segment_id": "seg_0035",
@@ -2008,67 +2244,102 @@
       {
         "segment_id": "seg_0069",
         "frame_ids": [
-          "frame_0063",
           "frame_0064"
         ]
       },
       {
         "segment_id": "seg_0070",
         "frame_ids": [
-          "frame_0065",
-          "frame_0066"
+          "frame_0065"
         ]
       },
       {
         "segment_id": "seg_0071",
         "frame_ids": [
-          "frame_0067"
+          "frame_0065"
         ]
       },
       {
         "segment_id": "seg_0072",
         "frame_ids": [
-          "frame_0068"
+          "frame_0066"
         ]
       },
       {
         "segment_id": "seg_0073",
         "frame_ids": [
-          "frame_0069"
+          "frame_0066",
+          "frame_0067"
         ]
       },
       {
         "segment_id": "seg_0074",
         "frame_ids": [
-          "frame_0070"
+          "frame_0067"
         ]
       },
       {
         "segment_id": "seg_0075",
         "frame_ids": [
-          "frame_0071"
+          "frame_0068"
         ]
       },
       {
         "segment_id": "seg_0076",
         "frame_ids": [
-          "frame_0072"
+          "frame_0068"
         ]
       },
       {
         "segment_id": "seg_0077",
         "frame_ids": [
-          "frame_0073"
+          "frame_0069"
         ]
       },
       {
         "segment_id": "seg_0078",
         "frame_ids": [
-          "frame_0074"
+          "frame_0070"
         ]
       },
       {
         "segment_id": "seg_0079",
+        "frame_ids": [
+          "frame_0071"
+        ]
+      },
+      {
+        "segment_id": "seg_0080",
+        "frame_ids": [
+          "frame_0072"
+        ]
+      },
+      {
+        "segment_id": "seg_0081",
+        "frame_ids": [
+          "frame_0073"
+        ]
+      },
+      {
+        "segment_id": "seg_0082",
+        "frame_ids": [
+          "frame_0073"
+        ]
+      },
+      {
+        "segment_id": "seg_0083",
+        "frame_ids": [
+          "frame_0074"
+        ]
+      },
+      {
+        "segment_id": "seg_0084",
+        "frame_ids": [
+          "frame_0074"
+        ]
+      },
+      {
+        "segment_id": "seg_0085",
         "frame_ids": [
           "frame_0075"
         ]
@@ -2078,6 +2349,11 @@
   "metadata": {
     "frame_sampling_strategy": "fixed_interval",
     "frame_sampling_interval_sec": 10.0,
+    "alignment_validation": {
+      "valid": true,
+      "issues_count": 0,
+      "issues": []
+    },
     "notes": "Base decoded representation. All downstream steps must read from this file."
   }
 }

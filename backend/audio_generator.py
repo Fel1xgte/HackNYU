@@ -29,6 +29,7 @@ import sys
 import json
 from pathlib import Path
 from typing import List, Optional
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from elevenlabs import VoiceSettings
 from elevenlabs.client import ElevenLabs
 
@@ -58,6 +59,13 @@ def initialize_elevenlabs_client() -> Optional[ElevenLabs]:
 
 # Initialize client globally
 client = initialize_elevenlabs_client()
+
+
+def write_status(status: str):
+    """Write status to status.txt for frontend polling"""
+    status_file = Path("workspace/status.txt")
+    status_file.write_text(status)
+    print(f"📊 Status: {status}")
 
 
 def get_voice_settings() -> VoiceSettings:
@@ -121,10 +129,15 @@ def generate_slide_audio(slide_text: str, output_filename: str) -> Optional[str]
     try:
         print(f"🎙️  Generating audio: {output_filename}")
         
-        # Validate input
+        # Validate input - CRITICAL SAFETY CHECK
         if not slide_text or slide_text.strip() == "":
-            print(f"   ⚠️  Warning: Empty text provided for {output_filename}", file=sys.stderr)
+            print(f"   ❌ ERROR: Empty text provided for {output_filename}", file=sys.stderr)
+            print(f"   This will cause TTS to fail. Check your slide data!", file=sys.stderr)
             return None
+        
+        # Check for minimum text length
+        if len(slide_text.strip()) < 10:
+            print(f"   ⚠️  WARNING: Very short text ({len(slide_text)} chars) for {output_filename}", file=sys.stderr)
         
         # Generate audio using ElevenLabs
         audio_generator = client.text_to_speech.convert(
@@ -196,27 +209,45 @@ def generate_all_slide_audios(slides_json_path: str) -> List[str]:
             print("❌ No slides found in JSON file", file=sys.stderr)
             return []
         
-        print(f"\n🎵 Generating audio for {len(slides)} slides with Confucius-style voice...\n")
+        print(f"\n🎵 Generating audio for {len(slides)} slides IN PARALLEL with Confucius-style voice...\n")
         
-        audio_paths = []
-        failed_count = 0
-        
-        for i, slide in enumerate(slides, start=1):
+        def generate_audio_for_slide(i: int, slide: dict, total: int) -> Optional[str]:
+            """Generate audio for a single slide - can run in parallel"""
+            write_status(f"generating_audio:audio_{i}_of_{total}")
+            
             speaker_notes = slide.get("speaker_notes", "")
             
             if not speaker_notes or speaker_notes.strip() == "":
                 print(f"⚠️  Warning: Slide {i} has no speaker notes, skipping...", file=sys.stderr)
-                continue
+                return None
             
             output_filename = f"audio_{i:02d}.mp3"
+            return generate_slide_audio(speaker_notes, output_filename)
+        
+        audio_paths = []
+        failed_count = 0
+        
+        # Use ThreadPoolExecutor with max 6 workers (ElevenLabs allows this)
+        with ThreadPoolExecutor(max_workers=6) as executor:
+            # Submit all tasks
+            future_to_idx = {
+                executor.submit(generate_audio_for_slide, i, slide, len(slides)): i
+                for i, slide in enumerate(slides, start=1)
+            }
             
-            audio_path = generate_slide_audio(speaker_notes, output_filename)
-            
-            if audio_path:
-                audio_paths.append(audio_path)
-            else:
-                failed_count += 1
-                print(f"❌ Failed to generate audio for slide {i}", file=sys.stderr)
+            # Collect results as they complete
+            for future in as_completed(future_to_idx):
+                idx = future_to_idx[future]
+                try:
+                    audio_path = future.result()
+                    if audio_path:
+                        audio_paths.append(audio_path)
+                    else:
+                        failed_count += 1
+                        print(f"❌ Failed to generate audio for slide {idx}", file=sys.stderr)
+                except Exception as e:
+                    failed_count += 1
+                    print(f"❌ Error generating audio for slide {idx}: {str(e)}", file=sys.stderr)
         
         # Summary
         print(f"\n{'='*70}")

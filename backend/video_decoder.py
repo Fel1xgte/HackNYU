@@ -9,6 +9,7 @@ Original file is located at
 
 import os
 import json
+import math
 from dataclasses import dataclass, asdict
 from datetime import datetime
 # --- FIX: IMPORT TUPLE, LIST, DICT, ANY, OPTIONAL ---
@@ -90,6 +91,12 @@ def transcribe_video_local(
 
     for i, seg in enumerate(segments_list):
         seg_id = generate_id("seg", i + 1)
+        # Convert log probability to confidence score (0-1 range)
+        raw_logprob = float(seg.get("avg_logprob", 0.0))
+        # Whisper returns avg_logprob (typically negative), convert to probability
+        # Using exp() to convert log probability to probability
+        confidence = min(1.0, max(0.0, math.exp(raw_logprob)))
+        
         audio_segments.append(
             AudioSegment(
                 segment_id=seg_id,
@@ -97,9 +104,9 @@ def transcribe_video_local(
                 start_sec=float(seg["start"]),
                 end_sec=float(seg["end"]),
                 text=seg["text"].strip(),
-                confidence=float(seg.get("avg_logprob", 0.0)),
+                confidence=confidence,
                 speaker=None,
-                metadata={}
+                metadata={"raw_logprob": raw_logprob}
             )
         )
 
@@ -166,6 +173,7 @@ def extract_keyframes_fixed_interval(
     keyframes: List[VisualKeyframe] = []
     current_time = 0.0
     frame_index = 0
+    prev_ocr_text = ""  # Track previous OCR for deduplication
 
     print(f"[decoder] Sampling frames every {interval_sec} seconds...")
     print(f"[decoder] Video duration ~{duration_sec:.1f}s, FPS={fps:.1f}")
@@ -189,9 +197,21 @@ def extract_keyframes_fixed_interval(
             print(f"[decoder][WARN] OCR failed on {frame_id}: {e}")
             ocr_text = ""
 
+        # Deduplicate OCR: if very similar to previous frame, mark as duplicate
+        is_duplicate = False
+        if ocr_text and prev_ocr_text:
+            # Calculate similarity (simple approach: exact match or very close)
+            similarity = len(set(ocr_text.split()) & set(prev_ocr_text.split())) / max(len(ocr_text.split()), len(prev_ocr_text.split()))
+            if similarity > 0.9:  # 90% similarity threshold
+                is_duplicate = True
+                ocr_text = f"[DUPLICATE_OF_PREVIOUS] {ocr_text[:50]}..." if len(ocr_text) > 50 else f"[DUPLICATE_OF_PREVIOUS] {ocr_text}"
+        
+        if not is_duplicate and ocr_text:
+            prev_ocr_text = ocr_text
+
         # Classify frames as slides based on OCR content
         # If OCR detected substantial text, it's likely a slide
-        if ocr_text and len(ocr_text.strip()) > 20:
+        if ocr_text and len(ocr_text.strip()) > 20 and not is_duplicate:
             kind = "slide"
         else:
             kind = "unknown"
@@ -224,6 +244,92 @@ def extract_keyframes_fixed_interval(
 # ---------------------------------------------------------
 # 3) Simple alignment audio ↔ visual
 # ---------------------------------------------------------
+
+def find_nearest_frame(
+    target_time: float,
+    visual_frames: List[VisualKeyframe]
+) -> Optional[str]:
+    """
+    Find the frame_id of the keyframe closest to target_time.
+    Returns None if no frames available.
+    """
+    if not visual_frames:
+        return None
+    
+    nearest_frame = min(visual_frames, key=lambda f: abs(f.time_sec - target_time))
+    return nearest_frame.frame_id
+
+
+def validate_alignment(
+    alignments: List[Dict[str, Any]],
+    audio_segments: List[AudioSegment],
+    visual_frames: List[VisualKeyframe],
+    max_time_diff: float = 15.0
+) -> Dict[str, Any]:
+    """
+    Validate that audio-visual alignments make temporal sense.
+    Returns a report with any suspicious alignments.
+    """
+    issues = []
+    frame_lookup = {f.frame_id: f for f in visual_frames}
+    segment_lookup = {s.segment_id: s for s in audio_segments}
+    
+    for alignment in alignments:
+        segment_id = alignment["segment_id"]
+        frame_ids = alignment["frame_ids"]
+        
+        if segment_id not in segment_lookup:
+            continue
+            
+        segment = segment_lookup[segment_id]
+        segment_mid = (segment.start_sec + segment.end_sec) / 2
+        
+        for frame_id in frame_ids:
+            if frame_id not in frame_lookup:
+                continue
+                
+            frame = frame_lookup[frame_id]
+            time_diff = abs(frame.time_sec - segment_mid)
+            
+            if time_diff > max_time_diff:
+                issues.append({
+                    "segment_id": segment_id,
+                    "frame_id": frame_id,
+                    "time_diff": time_diff,
+                    "segment_time": segment_mid,
+                    "frame_time": frame.time_sec
+                })
+    
+    return {
+        "valid": len(issues) == 0,
+        "issues_count": len(issues),
+        "issues": issues
+    }
+
+
+def fill_empty_alignments(
+    alignments: List[Dict[str, Any]],
+    audio_segments: List[AudioSegment],
+    visual_frames: List[VisualKeyframe]
+) -> List[Dict[str, Any]]:
+    """
+    For alignments with no frame_ids, assign the nearest frame based on timing.
+    """
+    segment_lookup = {s.segment_id: s for s in audio_segments}
+    
+    for alignment in alignments:
+        if not alignment["frame_ids"]:
+            segment_id = alignment["segment_id"]
+            if segment_id in segment_lookup:
+                segment = segment_lookup[segment_id]
+                segment_mid = (segment.start_sec + segment.end_sec) / 2
+                nearest = find_nearest_frame(segment_mid, visual_frames)
+                if nearest:
+                    alignment["frame_ids"] = [nearest]
+                    print(f"[decoder][INFO] Filled empty alignment for {segment_id} with {nearest}")
+    
+    return alignments
+
 
 def align_audio_to_visual(
     audio_segments: List[AudioSegment],
@@ -276,6 +382,21 @@ def decode_video_to_json(
           visual_keyframes (with ocr_text)
           audio_to_visual alignments
     """
+    
+    # Validate input video exists
+    if not os.path.exists(video_path):
+        raise FileNotFoundError(f"Video file not found: {video_path}")
+    
+    # Validate video file size
+    video_size = os.path.getsize(video_path)
+    if video_size == 0:
+        raise ValueError(f"Video file is empty: {video_path}")
+    
+    print(f"[decoder] Processing video: {video_path} ({video_size / (1024*1024):.2f} MB)")
+    
+    # Validate interval
+    if interval_sec <= 0:
+        raise ValueError(f"interval_sec must be positive, got {interval_sec}")
 
     # 1. Transcribe
     audio_segments = transcribe_video_local(
@@ -283,7 +404,11 @@ def decode_video_to_json(
         model_name=whisper_model,
         language=language
     )
-
+    
+    # Validate transcription produced results
+    if not audio_segments:
+        print("[decoder][WARN] No audio segments detected. Video may be silent or corrupted.")
+    
     # 2. Visual frames + OCR
     visual_keyframes, duration_sec, fps, width, height = extract_keyframes_fixed_interval(
         video_path=video_path,
@@ -291,9 +416,30 @@ def decode_video_to_json(
         interval_sec=interval_sec,
         ocr_lang=ocr_lang
     )
+    
+    # Validate frames were extracted
+    if not visual_keyframes:
+        raise RuntimeError("Failed to extract any visual keyframes from video")
+    
+    if duration_sec <= 0:
+        raise ValueError(f"Invalid video duration: {duration_sec}")
+    
+    print(f"[decoder] Video info: {duration_sec:.1f}s @ {fps:.1f} fps, {width}x{height}")
 
     # 3. Align
     audio_to_visual = align_audio_to_visual(audio_segments, visual_keyframes)
+    
+    # 3.1 Fix empty alignments
+    audio_to_visual = fill_empty_alignments(audio_to_visual, audio_segments, visual_keyframes)
+    
+    # 3.2 Validate alignments
+    validation_report = validate_alignment(audio_to_visual, audio_segments, visual_keyframes)
+    if not validation_report["valid"]:
+        print(f"[decoder][WARN] Found {validation_report['issues_count']} suspicious alignments")
+        for issue in validation_report["issues"][:5]:  # Show first 5
+            print(f"  - {issue['segment_id']} ↔ {issue['frame_id']}: time_diff={issue['time_diff']:.1f}s")
+    else:
+        print(f"[decoder][OK] All alignments validated successfully")
 
     # 4. Build JSON
     video_decode = {
@@ -336,6 +482,7 @@ def decode_video_to_json(
         "metadata": {
             "frame_sampling_strategy": "fixed_interval",
             "frame_sampling_interval_sec": interval_sec,
+            "alignment_validation": validation_report,
             "notes": "Base decoded representation. All downstream steps must read from this file."
         }
     }

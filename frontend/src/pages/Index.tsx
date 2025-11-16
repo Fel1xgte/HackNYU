@@ -68,6 +68,21 @@ const Index = () => {
   const handleUpload = async () => {
     if (!selectedFile) return;
 
+    // CLIENT-SIDE PRE-VALIDATION
+    const MAX_SIZE_MB = 200;
+    const fileSizeMB = selectedFile.size / (1024 * 1024);
+
+    if (fileSizeMB > MAX_SIZE_MB) {
+      toast({
+        title: "File too large",
+        description: `Maximum file size is ${MAX_SIZE_MB}MB. Your file is ${fileSizeMB.toFixed(
+          1
+        )}MB.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const formData = new FormData();
       formData.append("file", selectedFile);
@@ -77,15 +92,18 @@ const Index = () => {
         body: formData,
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to upload video");
-      }
-
       const data = await response.json();
+
+      if (!response.ok) {
+        // Handle validation errors from backend
+        throw new Error(data.detail || "Upload failed");
+      }
 
       toast({
         title: "Upload successful",
-        description: "Your video is being processed...",
+        description: `Processing your ${
+          data.duration_sec?.toFixed(0) || 0
+        }s video (${data.file_size_mb || 0}MB)`,
       });
 
       navigate("/results");

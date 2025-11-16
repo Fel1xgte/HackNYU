@@ -2,14 +2,24 @@ import json
 import os
 import sys
 import re
+from pathlib import Path
+import time
 import google.generativeai as genai
 
 
 API_KEY_ENV_VAR = "GEMINI_API_KEY"
 MODEL_NAME = "gemini-2.5-flash"
+API_TIMEOUT_SECONDS = 90  # Maximum wait time for Gemini API
 
 INPUT_JSON_PATH = "./workspace/decoded_video.json"
 OUTPUT_JSON_PATH = "./workspace/generated_slides.json"
+
+
+def write_status(status: str):
+    """Write status to status.txt for frontend polling"""
+    status_file = Path("workspace/status.txt")
+    status_file.write_text(status)
+    print(f"📊 Status: {status}")
 
 
 # ------------------------------------------------------
@@ -61,6 +71,13 @@ def generate_slide_plan(client, full_transcript, course_title):
     The real NotebookLM-style summarizer:
     Takes a long transcript → outputs 6 slides with title/points/speaker_notes.
     """
+    
+    # Validate inputs
+    if not full_transcript or full_transcript.strip() == "":
+        raise ValueError("Empty transcript provided to generate_slide_plan")
+    
+    if len(full_transcript.strip()) < 100:
+        print(f"⚠️  WARNING: Very short transcript ({len(full_transcript)} chars). Results may be poor.", file=sys.stderr)
 
     prompt = f"""
 You are an expert AI Tutor slide generator.
@@ -94,23 +111,54 @@ Return ONLY valid JSON:
 """
 
     try:
+        write_status("generating_slide_text:calling_ai_model")
+        print("✨ Generating slide plan... (this may take 30-60 sec)")
+        
+        start_time = time.time()
         response = client.models.generate_content(
             model=MODEL_NAME,
             contents=prompt
         )
-        raw_text = response.text
-        cleaned = clean_json_response(raw_text)
-        return json.loads(cleaned)
+        elapsed = time.time() - start_time
+        print(f"⏱️  API call completed in {elapsed:.1f} seconds")
+        
+        raw = response.text
+        clean = clean_json_response(raw)
+        data = json.loads(clean)
+        
+        # CRITICAL: Validate the LLM output structure
+        if "slides" not in data:
+            raise ValueError("LLM response missing 'slides' key")
+        
+        if not isinstance(data["slides"], list):
+            raise ValueError("LLM 'slides' is not a list")
+        
+        if len(data["slides"]) == 0:
+            raise ValueError("LLM generated 0 slides")
+        
+        # Validate each slide has required fields
+        for i, slide in enumerate(data["slides"]):
+            required_fields = ["title", "points", "speaker_notes"]
+            for field in required_fields:
+                if field not in slide:
+                    raise ValueError(f"Slide {i+1} missing required field: {field}")
+                if not slide[field]:
+                    print(f"⚠️  WARNING: Slide {i+1} has empty {field}", file=sys.stderr)
+        
+        print(f"✅ Generated {len(data['slides'])} slides successfully")
+        return data
 
     except Exception as e:
-        print(f"❌ JSON parse error: {e}", file=sys.stderr)
+        error_msg = f"JSON parse error: {str(e)}"
+        print(f"❌ {error_msg}", file=sys.stderr)
+        write_status(f"error:slide_generation_failed:{str(e)[:100]}")
         return {
             "course_title": course_title,
             "slides": [
                 {
                     "title": "Error Occurred",
                     "points": ["Model failed"],
-                    "speaker_notes": "Parsing error occurred."
+                    "speaker_notes": f"Parsing error occurred: {str(e)}"
                 }
             ]
         }
@@ -122,6 +170,7 @@ Return ONLY valid JSON:
 # ------------------------------------------------------
 
 def load_full_transcript():
+    write_status("generating_slide_text:loading_transcript")
     data = json.load(open(INPUT_JSON_PATH, "r"))
     audio_segments = data.get("audio_segments", [])
 
@@ -147,9 +196,11 @@ def main():
     print("📘 Loading transcript...")
     full_transcript, course_title = load_full_transcript()
 
-    print("✨ Generating slide plan...")
+    write_status("generating_slide_text:calling_ai_model")
+    print("✨ Generating slide plan... (this may take 30-60 sec)")
     generated_slides = generate_slide_plan(client, full_transcript, course_title)
 
+    write_status("generating_slide_text:saving_slides")
     with open(OUTPUT_JSON_PATH, "w") as f:
         json.dump(generated_slides, f, indent=2, ensure_ascii=False)
 

@@ -30,6 +30,13 @@ import json
 from pathlib import Path
 from config import Config
 
+
+def write_status(status: str):
+    """Write status to status.txt for frontend polling"""
+    status_file = Path("workspace/status.txt")
+    status_file.write_text(status)
+    print(f"📊 Status: {status}")
+
 # Directories are now controlled by Config
 # VIDEO_SEGMENTS_DIR = "video_segments"
 # FINAL_OUTPUT_DIR = "final_output"
@@ -114,6 +121,7 @@ def create_video_segment(slide_image_path, audio_path, segment_index, duration=N
         output_filename = f"segment_{segment_index:02d}.mp4"
         output_path = os.path.join(output_dir, output_filename)
         
+        write_status(f"stitching_video:segment_{segment_index}")
         print(f"🎬 Creating video segment {segment_index}...")
         print(f"   Slide: {slide_image_path}")
         print(f"   Audio: {audio_path}")
@@ -191,6 +199,7 @@ def concatenate_video_segments(segment_paths, output_filename="final_video.mp4")
             print("❌ No video segments to concatenate", file=sys.stderr)
             return None
         
+        write_status("stitching_video:merging_segments")
         print(f"\n🎞️  Concatenating {len(segment_paths)} video segments...")
         
         # Create concat list file for FFmpeg
