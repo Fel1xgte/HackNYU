@@ -30,27 +30,32 @@ class Config:
     # Directory Structure
     # ============================================
     BASE_DIR = Path(__file__).parent
-    PARENT_DIR = BASE_DIR.parent
+    
+    # Central working directory for all dynamic files
+    WORKSPACE_DIR = BASE_DIR / "workspace"
     
     # Input directories
-    INPUT_JSON_PATH = BASE_DIR / "sample_transcript.json"
+    INPUT_JSON_PATH = WORKSPACE_DIR / "decoded_video.json"
     
     # Output directories
-    OUTPUT_SLIDES_JSON = BASE_DIR / "generated_slides.json"
-    RENDERED_SLIDES_DIR = BASE_DIR / "rendered_slides"
-    GENERATED_AUDIO_DIR = BASE_DIR / "generated_audio"
-    VIDEO_SEGMENTS_DIR = BASE_DIR / "video_segments"
-    FINAL_OUTPUT_DIR = BASE_DIR / "final_output"
+    OUTPUT_SLIDES_JSON = WORKSPACE_DIR / "generated_slides.json"
+    RENDERED_SLIDES_DIR = WORKSPACE_DIR / "rendered_slides"
+    GENERATED_AUDIO_DIR = WORKSPACE_DIR / "generated_audio"
+    VIDEO_SEGMENTS_DIR = WORKSPACE_DIR / "video_segments"
+    FINAL_OUTPUT_DIR = WORKSPACE_DIR / "final_output"
+    FRAMES_DIR = WORKSPACE_DIR / "frames"
     
     # Ensure output directories exist
     @classmethod
     def create_directories(cls):
         """Create all required output directories if they don't exist."""
         for directory in [
+            cls.WORKSPACE_DIR,
             cls.RENDERED_SLIDES_DIR,
             cls.GENERATED_AUDIO_DIR,
             cls.VIDEO_SEGMENTS_DIR,
-            cls.FINAL_OUTPUT_DIR
+            cls.FINAL_OUTPUT_DIR,
+            cls.FRAMES_DIR
         ]:
             directory.mkdir(parents=True, exist_ok=True)
     
@@ -59,6 +64,7 @@ class Config:
     # ============================================
     ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY", "")
     GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+    OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
     
     # ============================================
     # Video Generation Settings
