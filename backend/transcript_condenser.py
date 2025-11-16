@@ -33,11 +33,12 @@ def create_gemini_client():
         return None
     
     try:
-        client = genai.Client(api_key=api_key)
-        print(f"✨ Gemini client initialized: {MODEL_NAME}")
-        return client
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel(MODEL_NAME)
+        print(f"✨ Gemini model initialized: {MODEL_NAME}")
+        return model
     except Exception as e:
-        print(f"❌ Failed to initialize Gemini client: {e}", file=sys.stderr)
+        print(f"❌ Failed to initialize Gemini model: {e}", file=sys.stderr)
         return None
 
 
@@ -66,7 +67,7 @@ def clean_json_response(raw):
 # LLM: Generate Slide Plan From Full Transcript
 # ------------------------------------------------------
 
-def generate_slide_plan(client, full_transcript, course_title):
+def generate_slide_plan(model, full_transcript, course_title):
     """
     The real NotebookLM-style summarizer:
     Takes a long transcript → outputs 6 slides with title/points/speaker_notes.
@@ -115,10 +116,7 @@ Return ONLY valid JSON:
         print("✨ Generating slide plan... (this may take 30-60 sec)")
         
         start_time = time.time()
-        response = client.models.generate_content(
-            model=MODEL_NAME,
-            contents=prompt
-        )
+        response = model.generate_content(prompt)
         elapsed = time.time() - start_time
         print(f"⏱️  API call completed in {elapsed:.1f} seconds")
         
@@ -189,8 +187,8 @@ def load_full_transcript():
 # ------------------------------------------------------
 
 def main():
-    client = create_gemini_client()
-    if not client:
+    model = create_gemini_client()
+    if not model:
         sys.exit(1)
 
     print("📘 Loading transcript...")
@@ -198,7 +196,7 @@ def main():
 
     write_status("generating_slide_text:calling_ai_model")
     print("✨ Generating slide plan... (this may take 30-60 sec)")
-    generated_slides = generate_slide_plan(client, full_transcript, course_title)
+    generated_slides = generate_slide_plan(model, full_transcript, course_title)
 
     write_status("generating_slide_text:saving_slides")
     with open(OUTPUT_JSON_PATH, "w") as f:

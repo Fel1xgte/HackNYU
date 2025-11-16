@@ -1,3 +1,65 @@
 {
-  "slides": []
+  "course_title": "IC Design Process: Beginner's Overview",
+  "slides": [
+    {
+      "title": "Welcome to IC Design Process",
+      "points": [
+        "A beginner's overview to VLSI technology by SystemVerilog Academy.",
+        "Addresses the challenge: connecting HDL code to actual silicon circuits.",
+        "Simplifies the journey from RTL design to manufacturing.",
+        "Focuses on theoretical overview, not specific coding practices."
+      ],
+      "speaker_notes": "This course, presented by SystemVerilog Academy, offers a beginner's introduction to the IC Design Process and VLSI technology. Its primary goal is to demystify the connection between what designers write in Hardware Description Languages and the actual circuits produced in silicon, covering stages from RTL design to manufacturing. This is a high-level, theory-focused course designed to give an overview, rather than teach specific coding."
+    },
+    {
+      "title": "Understanding Integrated Circuits (ICs)",
+      "points": [
+        "ICs: large numbers of electronic circuits built into tiny semiconductor plates (silicon).",
+        "System on Chip (SoC): an IC integrating all components of a complete electronic system.",
+        "ICs can contain billions of transistors; categorized as analog or digital.",
+        "This course focuses on digital ICs, designed using HDLs, with similar manufacturing processes."
+      ],
+      "speaker_notes": "An Integrated Circuit, or IC, is a device where numerous electronic circuits are fabricated onto a small piece of semiconductor material, typically silicon. An SoC takes this further by integrating an entire electronic system onto a single chip. Despite their tiny size, ICs can host billions of transistors. They are categorized as analog or digital. Our focus in this course is on digital ICs, which are commonly designed using Hardware Description Languages, though their manufacturing processes share many similarities with analog ICs."
+    },
+    {
+      "title": "The Evolution of IC Technology: VLSI",
+      "points": [
+        "Early digital switches used bulky vacuum tubes before 1947 transistor invention.",
+        "Initial circuits used discrete transistors; idea of 'integration' led to ICs.",
+        "IC technology scaled through SSI, MSI, LSI based on increasing transistor counts.",
+        "Today, all advanced IC manufacturing is broadly termed Very Large-Scale Integration (VLSI)."
+      ],
+      "speaker_notes": "Before the invention of transistors in 1947, digital circuits relied on bulky vacuum tubes. While transistors brought miniaturization, circuits were initially made of discrete components. The breakthrough concept of integrating all components onto a single silicon piece gave birth to the Integrated Circuit. IC technology rapidly evolved, with classifications like Small-Scale (SSI), Medium-Scale (MSI), and Large-Scale Integration (LSI) marking increases in transistor density. Now, regardless of the exact count, all modern high-density IC manufacturing is referred to as Very Large-Scale Integration, or VLSI, capable of billions of transistors."
+    },
+    {
+      "title": "Digital Circuit Fundamentals: Core Concepts",
+      "points": [
+        "Digital circuits process real-world data converted into binary (0s and 1s).",
+        "Switches (transistors/CMOS devices) are the fundamental building blocks, controlling voltage.",
+        "Combinational circuits: outputs depend only on current inputs.",
+        "Sequential circuits: outputs depend on current inputs AND past inputs (contain memory)."
+      ],
+      "speaker_notes": "Before diving into IC design, it's crucial to refresh digital circuit fundamentals. Digital circuits operate by converting real-world data into binary 0s and 1s, represented by voltage levels. The core mechanism involves 'switching' voltages on and off, with transistors or CMOS devices serving as these essential switches. Digital circuits are classified into two main types: combinational circuits, whose outputs are purely a function of their current inputs, and sequential circuits, which incorporate memory elements, meaning their outputs are influenced by both present and past inputs."
+    },
+    {
+      "title": "Digital Circuit Fundamentals: Logic & Memory",
+      "points": [
+        "Digital circuits are comprised of logic gates (AND, OR, NOT, NAND, NOR, XOR, XNOR).",
+        "Flip-flops are memory storage elements, storing a single bit per clock signal.",
+        "All types of flip-flops are themselves constructed from logic gates.",
+        "Ultimately, every logic gate (and thus every digital circuit) is made using transistors."
+      ],
+      "speaker_notes": "Simplified digital circuits are built from two primary components: logic gates and flip-flops. There are seven basic logic gates that perform Boolean operations. Flip-flops are critical memory elements, designed to store a single bit of data for the duration of a clock signal. An important concept to grasp is that even flip-flops are constructed from various arrangements of logic gates. Taking this abstraction further, every single logic gate can be realized using just transistors. Therefore, every complex digital circuit, no matter its function, is fundamentally a vast network of transistors."
+    },
+    {
+      "title": "Simplifying Design: The Role of HDLs",
+      "points": [
+        "Designing complex digital circuits at the transistor level is impractical due to scale.",
+        "The aim is to model circuits abstractly, hiding intricate low-level details.",
+        "Hardware Description Languages (HDLs) are the tools for this abstraction.",
+        "HDLs enable designers to focus on circuit behavior and structure, not individual transistors."
+      ],
+      "speaker_notes": "Given that every digital circuit ultimately boils down to a massive number of transistors, attempting to design at this granular level would be overwhelmingly complex and inefficient. To overcome this, our primary goal in IC design is to model these circuits in an abstract way, which effectively hides the minute details of the transistor-level implementation. This is precisely where Hardware Description Languages, or HDLs, come into play. They empower designers to operate at a higher level of abstraction, allowing them to focus on the circuit's functionality and overall architecture without needing to manipulate every individual transistor."
+    }
+  ]
 }

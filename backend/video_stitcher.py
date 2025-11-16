@@ -392,7 +392,8 @@ def get_file_paths_from_directories():
         return [], []
 
 
-if __name__ == "__main__":
+def main():
+    """Main function to stitch slides and audio into final video"""
     # When run directly, automatically find and process files
     try:
         slide_paths, audio_paths = get_file_paths_from_directories()
@@ -414,7 +415,7 @@ if __name__ == "__main__":
         if final_video:
             print(f"\n🎉 Video generation complete!")
             print(f"📁 Location: {os.path.abspath(final_video)}")
-            sys.exit(0)
+            return final_video
         else:
             print("\n❌ Video generation failed!")
             sys.exit(1)
@@ -422,3 +423,7 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"❌ Fatal error: {e}", file=sys.stderr)
         sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
